@@ -1,0 +1,226 @@
+{
+  "concepts": [
+    {
+      "name": "blue",
+      "class": "AspectModifierType",
+      "labels": ["color", "blue"]
+    }, {
+      "name": "yellow",
+      "class": "AspectModifierType",
+      "labels": ["color", "yellow"]
+    }, {
+      "name": "agent",
+      "class": "SimpleObjectType",
+      "modifierTypes": ["blue"]
+    }, {
+      "name": "banana",
+      "class": "SimpleObjectType",
+      "modifierTypes": ["yellow"]
+    }, {
+      "name": "eat",
+      "class": "AtomicActionType",
+      "interfaceId": 4
+    }, {
+      "name": "agent-inst-0",
+      "class": "SimpleObject",
+      "worldId": 123,
+      "types": ["agent"]
+    }, {
+      "name": "banana-inst-0",
+      "class": "SimpleObject",
+      "worldId": 234,
+      "types": ["banana"]
+    }, {
+      "name": "eat-inst-0",
+      "class": "AtomicAction",
+      "type": "eat",
+      "receiver": "banana-inst-0"
+    }, {
+      "name": "one",
+      "class": "Number",
+      "value": 1
+    }, {
+      "name": "identity",
+      "class": "IdentityRelationType"
+    }, {
+      "name": "identity-agent-inst-0-agent",
+      "class": "IdentityRelation",
+      "type": "identity",
+      "lTarget": "agent-inst-0",
+      "rTarget": "agent"
+    }, {
+      "name": "believe",
+      "class": "AuxiliaryRelationType",
+      "type": "believe"
+    }, {
+      "name": "believe-inst-0",
+      "class": "AuxiliaryRelation",
+      "type": "believe",
+      "lTarget": "agent-inst-0",
+      "rTarget": "eat-inst-0"
+    }
+  ],
+  "sentences": [
+    {
+      "body": "bob ate a banana",
+      "speaker": null,
+      "listener": null,
+      "root": {
+        "word": "",
+        "concept": "eat-inst-0",
+        "children": [
+          {
+            "word": "bob",
+            "concept": "agent-inst-0",
+            "children": []
+          }, {
+            "word": "ate",
+            "concept": "eat-inst-0",
+            "children": []
+          }, {
+            "word": "",
+            "concept": "banana-inst-0",
+            "children": [
+              {
+                "word": "a",
+                "concept": "one",
+                "children": []
+              },
+              {
+                "word": "banana",
+                "concept": "banana",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "body": "an agent ate a banana",
+      "speaker": null,
+      "listener": null,
+      "root": {
+        "word": "",
+        "concept": "eat-inst-0",
+        "children": [
+          {
+            "word": "",
+            "concept": "agent-inst-0",
+            "children": [
+              {
+                "word": "an",
+                "concept": "one",
+                "children": []
+              },
+              {
+                "word": "agent",
+                "concept": "agent",
+                "children": []
+              }
+            ]
+          }, {
+            "word": "ate",
+            "concept": "eat-inst-0",
+            "children": []
+          }, {
+            "word": "",
+            "concept": "banana-inst-0",
+            "children": [
+              {
+                "word": "a",
+                "concept": "one",
+                "children": []
+              },
+              {
+                "word": "banana",
+                "concept": "banana",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "body": "bob is an agent",
+      "speaker": null,
+      "listener": null,
+      "root": {
+        "word": "",
+        "concept": "identity-agent-inst-0-agent",
+        "children": [
+          {
+            "word": "bob",
+            "concept": "agent-inst-0",
+            "children": []
+          }, {
+            "word": "is",
+            "concept": "identity",
+            "children": []
+          }, {
+            "word": "an",
+            "concept": "one",
+            "children": []
+          },
+          {
+            "word": "agent",
+            "concept": "agent",
+            "children": []
+          }
+        ]
+      }
+    },
+    {
+      "body": "bob believes bob ate a banana",
+      "speaker": null,
+      "listener": null,
+      "root": {
+        "word": "",
+        "concept": "believe-inst-0",
+        "children": [
+          {
+            "word": "bob",
+            "concept": "agent-inst-0",
+            "children": []
+          }, {
+            "word": "believes",
+            "concept": "believe",
+            "children": []
+          }, {
+            "word": "",
+            "concept": "eat-inst-0",
+            "children": [
+              {
+                "word": "bob",
+                "concept": "agent-inst-0",
+                "children": []
+              },
+              {
+                "word": "ate",
+                "concept": "eat-inst-0",
+                "children": []
+              },
+              {
+                "word": "",
+                "concept": "banana-inst-0",
+                "children": [
+                  {
+                    "word": "a",
+                    "concept": "one",
+                    "children": []
+                  },
+                  {
+                    "word": "banana",
+                    "concept": "banana",
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
