@@ -21,9 +21,10 @@ func (r *identityRelation) interpret() {
 	}
 }
 
-func (a *Agent) newIdentityRelation(t *identityRelationType, lTarget, rTarget concept) *identityRelation {
+func (a *Agent) newIdentityRelation(t *identityRelationType, lTarget, rTarget concept,
+	args map[int]any) *identityRelation {
 	result := &identityRelation{}
-	a.newAbstractRelation(result, t, lTarget, rTarget, &result.abstractRelation)
+	a.newAbstractRelation(result, t, lTarget, rTarget, args, &result.abstractRelation)
 	return result.memorize().(*identityRelation)
 }
 
@@ -63,9 +64,9 @@ func (t identityRelationType) verify(_ ...any) *bool {
 	return nil
 }
 
-func (a *Agent) newIdentityRelationType() *identityRelationType {
+func (a *Agent) newIdentityRelationType(args map[int]any) *identityRelationType {
 	result := &identityRelationType{}
 
-	a.newAbstractRelationType(result, &result.abstractRelationType)
+	a.newAbstractRelationType(result, args, &result.abstractRelationType)
 	return result.memorize().(*identityRelationType)
 }
