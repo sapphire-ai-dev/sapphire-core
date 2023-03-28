@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"fmt"
+	"reflect"
 	"sort"
 )
 
@@ -15,50 +17,49 @@ func (m *agentMind) add(c concept) {
 	m.newThoughts[c]++
 }
 
-//func (m *agentMind) cycle() {
-//	m.generalize()
-//	m.propagateThoughts()
-//	m.printBreakdown()
-//}
+func (m *agentMind) cycle() {
+	//m.generalize()
+	m.propagateThoughts()
+	//m.printBreakdown()
+}
+
+//	func (m *agentMind) generalize() {
+//		thoughtGens := map[int]map[int]concept{}
+//		for c := range m.thoughts {
+//			thoughtGens[c._id()] = c._generalizations()
+//		}
 //
-//func (m *agentMind) generalize() {
-//	thoughtGens := map[int]map[int]concept{}
-//	for c := range m.thoughts {
-//		thoughtGens[c._id()] = c._generalizations()
-//	}
+//		for l := range m.thoughts {
+//			for r := range m.thoughts {
+//				if thoughtGens[l._id()][r._id()] != nil || thoughtGens[r._id()][l._id()] != nil {
+//					continue
+//				}
 //
-//	for l := range m.thoughts {
-//		for r := range m.thoughts {
-//			if thoughtGens[l._id()][r._id()] != nil || thoughtGens[r._id()][l._id()] != nil {
-//				continue
+//				l._generalize(r)
 //			}
-//
-//			l._generalize(r)
 //		}
 //	}
-//}
-//
-//func (m *agentMind) propagateThoughts() {
-//	for c := range m.thoughts {
-//		if _, ok := c.(object); ok {
-//			continue
-//		}
-//		if _, ok := c.(change); ok {
-//			continue
-//		}
-//		if _, ok := c.(modifier); ok {
-//			continue
-//		}
-//		m.add(c)
-//	}
-//
-//	for _, c := range m.agent.perception.visibleObjects {
-//		m.add(c)
-//	}
-//
-//	m.thoughts = m.filteredNewThoughts()
-//	m.newThoughts = map[concept]int{}
-//}
+func (m *agentMind) propagateThoughts() {
+	for c := range m.thoughts {
+		if _, ok := c.(object); ok {
+			continue
+		}
+		if _, ok := c.(change); ok {
+			continue
+		}
+		if _, ok := c.(modifier); ok {
+			continue
+		}
+		m.add(c)
+	}
+
+	for _, c := range m.agent.perception.visibleObjects {
+		m.add(c)
+	}
+
+	m.thoughts = m.filteredNewThoughts()
+	m.newThoughts = map[concept]int{}
+}
 
 func (m *agentMind) filteredNewThoughts() map[concept]bool {
 	result := map[concept]bool{}
@@ -72,6 +73,7 @@ func (m *agentMind) filteredNewThoughts() map[concept]bool {
 	for c, n := range m.newThoughts {
 		if m.agent.memory.find(c) == c {
 			thoughtList = append(thoughtList, pair{c, n})
+			fmt.Println("??", reflect.TypeOf(c))
 		}
 	}
 
@@ -87,6 +89,7 @@ func (m *agentMind) filteredNewThoughts() map[concept]bool {
 		result[p.c] = true
 	}
 
+	fmt.Println("mind", len(result), m.capacity)
 	return result
 }
 
@@ -103,11 +106,14 @@ func mindConcepts[T concept](m *agentMind) map[int]T {
 	return result
 }
 
+const defaultMindSize = 10
+
 func (a *Agent) newAgentMind() {
 	result := &agentMind{
 		agent:       a,
 		thoughts:    map[concept]bool{},
 		newThoughts: map[concept]int{},
+		capacity:    defaultMindSize,
 	}
 
 	a.mind = result

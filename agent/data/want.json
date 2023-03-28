@@ -1,0 +1,68 @@
+{
+  "concepts": [
+    {
+      "name": "blue",
+      "class": "AspectModifierType",
+      "labels": ["color", "blue"]
+    }, {
+      "name": "yellow",
+      "class": "AspectModifierType",
+      "labels": ["color", "yellow"]
+    },
+    {
+      "name": "agent",
+      "class": "SimpleObjectType",
+      "modifierTypes": ["blue"]
+    }, {
+      "name": "banana",
+      "class": "SimpleObjectType",
+      "modifierTypes": ["yellow"]
+    },
+    {
+      "name": "eat",
+      "class": "AtomicActionType",
+      "interfaceId": 4
+    }, {
+      "name": "banana-inst-0",
+      "class": "SimpleObject",
+      "worldId": 234,
+      "types": ["banana"]
+    },
+    {
+      "name": "eat-inst-hypothetical",
+      "class": "AtomicAction",
+      "type": "eat",
+      "receiver": "banana-inst-0"
+    }, {
+      "name": "one",
+      "class": "Number",
+      "value": 1
+    },
+    {
+      "name": "want",
+      "class": "AuxiliaryRelationType",
+      "type": "want"
+    }, {
+      "name": "want-change",
+      "class": "ActionStateChangeType",
+      "target": "eat"
+    },
+    {
+      "name": "want-change-inst-0",
+      "class": "ActionStateChange",
+      "type": "want-change",
+      "target": "eat-inst-hypothetical",
+      "value": 10.0
+    },
+    {
+      "name": "want-inst-0",
+      "class": "AuxiliaryRelation",
+      "type": "want",
+      "lTarget": "agent-inst-0",
+      "rTarget": "eat-inst-hypothetical",
+      "wantChange": "want-change-inst-0"
+    }
+  ],
+  "sentences": [
+  ]
+}
