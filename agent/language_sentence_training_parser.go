@@ -8,6 +8,7 @@ func (l *agentLanguage) initConceptParsers() {
 	l.conceptParsers["AspectModifierType"] = l.dataParserAspectModifierType
 	l.conceptParsers["SimpleObjectType"] = l.dataParserSimpleObjectType
 	l.conceptParsers["SimpleObject"] = l.dataParserSimpleObject
+	l.conceptParsers["SelfObject"] = l.dataParserSelfObject
 	l.conceptParsers["AtomicActionType"] = l.dataParserAtomicActionType
 	l.conceptParsers["AtomicAction"] = l.dataParserAtomicAction
 	l.conceptParsers["Number"] = l.dataParserNumber
@@ -45,6 +46,32 @@ func (l *agentLanguage) dataParserAtomicActionType(d *trainSntcData, data map[st
 	}
 
 	return l.agent.newAtomicActionType(d.newActionInterface(actionInterfaceId), nil)
+}
+
+const (
+	dataParserSelfObjectAttachSelf = "self"
+)
+
+func (l *agentLanguage) dataParserSelfObject(d *trainSntcData, data map[string]any) concept {
+	attach, attachOK := mapVal[string](data, "attach")
+	worldId, worldIdOk := mapInt(data, "worldId")
+	objectTypes, objectTypesOk := mapListConcept[objectType](d, data, "types")
+	var result *selfObject
+	if attachOK && attach == dataParserSelfObjectAttachSelf {
+		result = l.agent.self
+	} else if worldIdOk {
+		result = l.agent.newSelfObject(worldId, nil)
+	} else {
+		return nil
+	}
+
+	if objectTypesOk {
+		for _, t := range objectTypes {
+			result.addType(t)
+		}
+	}
+
+	return result
 }
 
 func (l *agentLanguage) dataParserSimpleObject(d *trainSntcData, data map[string]any) concept {

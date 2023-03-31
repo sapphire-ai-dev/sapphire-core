@@ -55,7 +55,8 @@ func (p *wordLangPart) fit(start int, ctx *sntcCtx) []*sntcFit {
 
 	var result []*sntcFit
 	if ctx.sentence[start] == p.w {
-		match := newSntcFit(start, start+1, p.instantiate(nil, nil), nil, p, 0)
+		imaginaryConcept := p.f.node.agent.record.generateImaginary(p.class, map[int]any{})
+		match := newSntcFit(start, start+1, p.instantiate(nil, nil), imaginaryConcept, p, 0)
 		ctx.addMatch(start, p, match)
 		result = append(result, match)
 	}
@@ -65,30 +66,25 @@ func (p *wordLangPart) fit(start int, ctx *sntcCtx) []*sntcFit {
 }
 
 func (p *wordLangPart) interpret(fit *sntcFit, ctx *sntcCtx) bool {
-	if fit.c != nil || p.class == nil {
+	if (fit.c != nil && fit.c.isImaginary() == false) || p.class == nil {
 		return true
 	}
 
-	candidates := ctx.filterConcepts(p.class)
-	conds, seen := ctx.interpretedConds[p.f]
+	condTruth, seen := ctx.interpretedConds[p.f]
 	if !seen {
-		conds = map[langCond]*bool{}
+		condTruth = map[langCond]*bool{}
 	}
 
 	var parentC concept
 	if fit.parent != nil && fit.parent.c != nil {
 		parentC = fit.parent.c
 	}
-	candidates = p.f.node.filterConcepts(parentC, candidates, conds, ctx)
-	if len(candidates) != 1 {
-		return false
+
+	for cond, truth := range condTruth {
+		fit.c, _ = cond.interpret(fit.c, parentC, truth, ctx)
 	}
 
-	for _, c := range candidates {
-		fit.c = c
-	}
-
-	return true
+	return fit.c != nil && fit.c.isImaginary() == false
 }
 
 func (f *langForm) newWordLangPart(class reflect.Type, w string) *wordLangPart {
@@ -192,6 +188,7 @@ func (p *recursiveLangPart) fit(start int, ctx *sntcCtx) []*sntcFit {
 	if start >= len(ctx.sentence) || ctx.fitStatus(p, start) {
 		return ctx.getMatch(start, p)
 	}
+	ctx.setFitStatus(p, start, true)
 
 	var result []*sntcFit
 	agent := p.f.node.agent
@@ -206,7 +203,6 @@ func (p *recursiveLangPart) fit(start int, ctx *sntcCtx) []*sntcFit {
 	for _, match := range result {
 		ctx.addMatch(start, p, match)
 	}
-	ctx.setFitStatus(p, start, true)
 	return result
 }
 

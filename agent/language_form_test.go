@@ -57,7 +57,7 @@ func TestLangFormFitWord(t *testing.T) {
 	fits := soLf.fit(0, ctx)
 	assert.Len(t, fits, 1)
 	assert.Equal(t, fits[0].lang, soLf)
-	assert.Nil(t, fits[0].c)
+	assert.True(t, fits[0].c.isImaginary())
 	assert.Equal(t, fits[0].children[0].parent, fits[0])
 }
 

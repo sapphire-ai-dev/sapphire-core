@@ -11,9 +11,9 @@ func (r *identityRelation) match(other concept) bool {
 }
 
 func (r *identityRelation) interpret() {
-	if r.lTarget().imagineReflect() != nil && r.rTarget().imagineReflect() == nil {
+	if r.lTarget().isImaginary() && r.rTarget().isImaginary() == false {
 		r.lTarget().replace(r.rTarget())
-	} else if r.lTarget().imagineReflect() == nil && r.rTarget().imagineReflect() != nil {
+	} else if r.lTarget().isImaginary() == false && r.rTarget().isImaginary() {
 		r.rTarget().replace(r.lTarget())
 	} else {
 		r.lTarget().applyIdentityRelation(r)

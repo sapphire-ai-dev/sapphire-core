@@ -92,6 +92,10 @@ func (n *langNode) formValue(subLog []*sntcLog, condTruth map[langCond]*bool) fl
 	return result
 }
 
+const (
+	formValueTrainSntc = 10.0
+)
+
 func (n *langNode) addLog(conds map[langCond]*bool, form *langForm, value float64) {
 	f := n.selectForm(form)
 	n.log = append(n.log, &sntcLog{
@@ -99,25 +103,6 @@ func (n *langNode) addLog(conds map[langCond]*bool, form *langForm, value float6
 		form:      f,
 		value:     value,
 	})
-}
-
-func (n *langNode) filterConcepts(parentC concept, concepts map[int]concept,
-	conds map[langCond]*bool, ctx *sntcCtx) map[int]concept {
-	result := map[int]concept{}
-	for _, c := range concepts {
-		satisfied := true
-		for cond, truth := range conds {
-			if cond.satisfied(c, parentC, ctx) != truth {
-				satisfied = false
-			}
-		}
-
-		if satisfied {
-			result[c.id()] = c
-		}
-	}
-
-	return result
 }
 
 func (l *agentLanguage) newLangNode(class reflect.Type) *langNode {

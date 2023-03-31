@@ -23,11 +23,10 @@ import (
 //   - P > 2^16:
 type partRecord struct {
 	*abstractConcept
-	agent             *Agent
-	classes           map[reflect.Type]*conceptClass
-	partTypeIds       map[int]*memReference         // getting a part id -> search for instance with this type
-	imagineReflects   map[reflect.Type]reflect.Type // imaginaryObject -> object, imaginaryAction -> action, etc.
-	interpretReflects map[reflect.Type]reflect.Type // object -> imaginaryObject, action -> imaginaryAction, etc.
+	agent               *Agent
+	classes             map[reflect.Type]*conceptClass
+	partTypeIds         map[int]*memReference // getting a part id -> search for instance with this type
+	imaginaryGenerators map[reflect.Type]func(map[int]any) concept
 }
 
 func (r *partRecord) match(_ concept) bool {
@@ -173,6 +172,8 @@ func (r *partRecord) initClasses() {
 	r.initClassesSingle(toReflect[*simpleObjectType](), toReflect[objectType](), map[int]reflect.Type{})
 	r.initClassesSingle(toReflect[*simpleObject](), toReflect[object](), map[int]reflect.Type{})
 
+	r.initClassesSingle(toReflect[*selfObject](), toReflect[object](), map[int]reflect.Type{})
+
 	r.initClassesSingle(toReflect[relationType](), toReflect[concept](), map[int]reflect.Type{})
 	r.initClassesSingle(toReflect[relation](), toReflect[concept](), map[int]reflect.Type{
 		partIdRelationT:       toReflect[relationType](),
@@ -214,15 +215,19 @@ func (r *partRecord) initClassesSingle(class, parent reflect.Type, parts map[int
 }
 
 func (r *partRecord) initImagineReflects() {
-	r.imagineReflects = map[reflect.Type]reflect.Type{}
-	r.interpretReflects = map[reflect.Type]reflect.Type{}
+	r.imaginaryGenerators = map[reflect.Type]func(map[int]any) concept{}
 
-	r.initImaginaryReflectSingle(toReflect[*imaginaryRelation](), toReflect[relation]())
+	r.imaginaryGenerators[toReflect[object]()] = r.agent.newImaginaryObject
 }
 
-func (r *partRecord) initImaginaryReflectSingle(imaginary, abstract reflect.Type) {
-	r.imagineReflects[imaginary] = abstract
-	r.interpretReflects[abstract] = imaginary
+func (r *partRecord) generateImaginary(class reflect.Type, args map[int]any) concept {
+	generator := r.imaginaryGenerators[class]
+	classNode := r.classes[class]
+	for generator == nil {
+		classNode = classNode.parent
+		generator = r.imaginaryGenerators[classNode.class]
+	}
+	return generator(args)
 }
 
 const (

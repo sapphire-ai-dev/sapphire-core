@@ -1,0 +1,81 @@
+{
+  "concepts": [
+    {
+      "name": "blue",
+      "class": "AspectModifierType",
+      "labels": ["color", "blue"]
+    }, {
+      "name": "yellow",
+      "class": "AspectModifierType",
+      "labels": ["color", "yellow"]
+    }, {
+      "name": "agent",
+      "class": "SimpleObjectType",
+      "modifierTypes": ["blue"]
+    }, {
+      "name": "banana",
+      "class": "SimpleObjectType",
+      "modifierTypes": ["yellow"]
+    }, {
+      "name": "eat",
+      "class": "AtomicActionType",
+      "interfaceId": 4
+    }, {
+      "name": "agent-self",
+      "class": "SelfObject",
+      "attach": "self",
+      "types": ["agent"]
+    }, {
+      "name": "banana-inst-0",
+      "class": "SimpleObject",
+      "worldId": 234,
+      "types": ["banana"]
+    }, {
+      "name": "eat-inst-0",
+      "class": "AtomicAction",
+      "type": "eat",
+      "receiver": "banana-inst-0"
+    }, {
+      "name": "one",
+      "class": "Number",
+      "value": 1
+    }
+  ],
+  "sentences": [
+    {
+      "body": "i ate a banana",
+      "speaker": "agent-self",
+      "listener": null,
+      "root": {
+        "word": "",
+        "concept": "eat-inst-0",
+        "children": [
+          {
+            "word": "i",
+            "concept": "agent-self",
+            "isPronoun": true,
+            "children": []
+          }, {
+            "word": "ate",
+            "concept": "eat-inst-0",
+            "children": []
+          }, {
+            "word": "",
+            "concept": "banana-inst-0",
+            "children": [
+              {
+                "word": "a",
+                "concept": "one",
+                "children": []
+              },
+              {
+                "word": "banana",
+                "concept": "banana",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    }]
+}

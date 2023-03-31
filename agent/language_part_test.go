@@ -46,18 +46,27 @@ func TestWordLangPartFit(t *testing.T) {
 func TestWordLangPartInterpret(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	class, word := toReflect[*simpleObject](), "it"
-	soWlp := agent.language.newLangNode(class).newLangForm().newWordLangPart(class, word)
+	ln := agent.language.newLangNode(class)
+	lf := ln.newLangForm()
+	soWlp := lf.newWordLangPart(class, word)
+	lf.parts = append(lf.parts, soWlp)
+	ln.selectForm(lf)
+
+	ln.addLog(map[langCond]*bool{
+		agent.language.condGenerator.generatorMentioned(nil, nil): ternary(true),
+	}, lf, 10.0)
+
 	ctx := agent.language.newSntcCtx(nil, nil)
 	ctx.sentence = strings.Split("it is an apple", " ")
-	fit := soWlp.fit(0, ctx)[0]
-	assert.Nil(t, fit.c)
+	fit := lf.fit(0, ctx)[0]
+	assert.True(t, fit.c.isImaginary())
 	assert.False(t, soWlp.interpret(fit, ctx))
 
 	soSbj := agent.newSimpleObject(3, nil)
 	ctx.convCtx.mentioned[soSbj.id()] = soSbj
-	assert.True(t, soWlp.interpret(fit, ctx))
+	assert.True(t, lf.interpret(fit, ctx))
 	assert.Equal(t, soSbj, fit.c)
-	assert.True(t, soWlp.interpret(fit, ctx))
+	assert.True(t, lf.interpret(fit, ctx))
 }
 
 func TestConceptLangPartConstructor(t *testing.T) {
@@ -169,7 +178,7 @@ func TestRecursiveLangPartInstantiate(t *testing.T) {
 	redInst := agent.newAspectModifier(redType, tc, conceptSourceObservation, nil, map[string]any{})
 	agent.language.registerWordConcept(word, redType, tenseId)
 
-	sn := amRlp.instantiate(redInst, nil)
+	sn := amRlp.instantiate(redInst, agent.language.newSntcCtx(nil, nil))
 	assert.Equal(t, sn.parent(), amtLf)
 	assert.Equal(t, word, strings.Join(sn.str(), " "))
 }

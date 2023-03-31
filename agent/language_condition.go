@@ -5,5 +5,6 @@ type langCond interface {
 	satisfied(root, parent concept, ctx *sntcCtx) *bool
 
 	// generate implicit concepts from the forms being used, i.e. "my apple" -> generate ownershipRelation
-	interpret(root, parent concept, truth *bool, ctx *sntcCtx) map[int]concept
+	// also updates root if necessary
+	interpret(root, parent concept, truth *bool, ctx *sntcCtx) (concept, map[int]concept)
 }

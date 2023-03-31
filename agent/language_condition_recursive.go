@@ -19,12 +19,12 @@ func (c *recursiveLangCondition) satisfied(root, parent concept, _ *sntcCtx) *bo
 	return &result
 }
 
-func (c *recursiveLangCondition) interpret(root, parent concept, truth *bool, _ *sntcCtx) map[int]concept {
+func (c *recursiveLangCondition) interpret(root, parent concept, truth *bool, _ *sntcCtx) (concept, map[int]concept) {
 	if truth == nil || *truth == false {
-		return map[int]concept{}
+		return root, map[int]concept{}
 	}
 
 	prt := root.abs().agent.newPartRelationType(c.partId, nil)
 	pr := root.abs().agent.newPartRelation(prt, parent, root, nil)
-	return map[int]concept{pr.id(): pr}
+	return root, map[int]concept{pr.id(): pr}
 }

@@ -1,7 +1,5 @@
 package agent
 
-import "fmt"
-
 type auxiliaryRelation struct {
 	*abstractRelation
 	_wantChange *memReference // weird naming... this is the change that carries value for a [want] auxiliaryRelation
@@ -53,7 +51,6 @@ func (a *Agent) newAuxiliaryRelation(t *auxiliaryRelationType, lTarget, rTarget 
 	result := &auxiliaryRelation{}
 	a.newAbstractRelation(result, t, lTarget, rTarget, args, &result.abstractRelation)
 	if wantChange, seen := conceptArg[*actionStateChange](args, conceptArgRelationAuxiliaryWantChange); seen {
-		fmt.Println(wantChange)
 		result._wantChange = wantChange.createReference(result, true)
 	}
 

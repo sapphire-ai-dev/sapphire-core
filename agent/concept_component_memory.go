@@ -30,7 +30,7 @@ func (m *conceptImplMemory) id() int {
 
 var errSelfReference = errors.New("_self reference")
 
-func (m *conceptImplMemory) memorize() conceptCpntMemory {
+func (m *conceptImplMemory) memorize() concept {
 	memoryCopy := m.agent.memory.add(m.abs._self)
 	if memoryCopy != m.abs._self {
 		m.deprecate()

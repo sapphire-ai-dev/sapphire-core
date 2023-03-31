@@ -51,8 +51,8 @@ func TestTrainingSentence(t *testing.T) {
 	concepts[sot2.id()] = sot2
 
 	body := "bob ate a banana"
-	ts := agent.language.newTrainSntc(body, tsnAa, concepts)
-	ts.rootNode.build(nil)
+	ts := agent.language.newTrainSntc(body, tsnAa, concepts, nil, nil)
+	ts.rootNode.build()
 
 	sn := agent.language.fit(strings.Split(body, " "), agent.language.newSntcCtx(nil, nil))
 	assert.Equal(t, strings.Join(sn.str(), " "), body)
@@ -62,11 +62,25 @@ func TestParse(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	sentences, _ := agent.language.trainParser.parse("data/data.json")
 	for _, sentence := range sentences {
-		sentence.rootNode.build(nil)
+		sentence.rootNode.build()
 	}
 
 	for _, sentence := range sentences {
 		ctx := agent.language.newSntcCtx(nil, nil)
+		sn := agent.language.fit(strings.Split(sentence.body, " "), ctx)
+		assert.Equal(t, strings.Join(sn.str(), " "), sentence.body)
+	}
+}
+
+func TestParsePronoun(t *testing.T) {
+	agent := newEmptyWorldAgent()
+	sentences, _ := agent.language.trainParser.parse("data/pronoun.json")
+	for _, sentence := range sentences {
+		sentence.rootNode.build()
+	}
+
+	for _, sentence := range sentences {
+		ctx := agent.language.newSntcCtx(agent.self, nil)
 		sn := agent.language.fit(strings.Split(sentence.body, " "), ctx)
 		assert.Equal(t, strings.Join(sn.str(), " "), sentence.body)
 	}

@@ -33,7 +33,7 @@ func (o *simpleObject) debugArgs() map[string]any {
 
 func (a *Agent) newSimpleObject(worldId int, args map[int]any) *simpleObject {
 	result := &simpleObject{worldId: worldId}
-	a.newAbstractObject(result, nil, &result.abstractObject)
+	a.newAbstractObject(result, args, &result.abstractObject)
 	return result.memorize().(*simpleObject)
 }
 
@@ -89,7 +89,7 @@ func (t *simpleObjectType) debugArgs() map[string]any {
 
 func (a *Agent) newSimpleObjectType(source int, modifTypes map[int]modifierType, args map[int]any) *simpleObjectType {
 	result := &simpleObjectType{}
-	a.newAbstractObjectType(result, source, nil, &result.abstractObjectType)
+	a.newAbstractObjectType(result, source, args, &result.abstractObjectType)
 	for modifTypeId, modifType := range modifTypes {
 		result._modifTypes[modifTypeId] = modifType.createReference(result, false)
 	}

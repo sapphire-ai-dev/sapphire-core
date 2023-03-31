@@ -119,20 +119,8 @@ func (l *agentLanguage) interpretMatch(match *sntcFit, ctx *sntcCtx, parent lang
 		}
 	}
 
-	if match.c == nil { // try to obtain concept from child conceptVerbalPart
-		cvpExists := false
-		for i, part := range currForm.parts {
-			if _, isCvp := part.(*conceptLangPart); isCvp {
-				match.c = match.children[i].c
-				cvpExists = true
-				break
-			}
-		}
-
-		// interpret new concept
-		if !cvpExists {
-			currForm.interpret(match, ctx)
-		}
+	if match.c == nil || match.c.isImaginary() { // try to obtain concept from child
+		currForm.interpret(match, ctx)
 	}
 
 	return matchNode
@@ -165,8 +153,9 @@ type langCondGenerator struct {
 func (g *langCondGenerator) generate(root concept, ctx *sntcCtx) map[langCond]bool {
 	result := map[langCond]bool{}
 	for _, f := range g.funcs {
-		c := g.language.condMemory.findCond(f(root, ctx))
+		c := f(root, ctx)
 		if c != nil {
+			c = g.language.condMemory.findCond(c)
 			result[c] = true
 		}
 	}
@@ -183,6 +172,32 @@ func (l *agentLanguage) newCondGenerator() {
 		language: l,
 		funcs:    []func(root concept, ctx *sntcCtx) langCond{},
 	}
+
+	l.condGenerator.initFuncs()
+}
+
+func (g *langCondGenerator) initFuncs() {
+	g.funcs = append(g.funcs, g.generatorObjectSpeaker)
+	g.funcs = append(g.funcs, g.generatorObjectListener)
+	g.funcs = append(g.funcs, g.generatorMentioned)
+}
+
+func (g *langCondGenerator) generatorObjectSpeaker(root concept, ctx *sntcCtx) langCond {
+	if _, ok := root.(object); ok && ctx.src != nil {
+		return &participantLangCondition{participantTypeId: participantTypeIdSpeaker}
+	}
+	return nil
+}
+
+func (g *langCondGenerator) generatorObjectListener(root concept, ctx *sntcCtx) langCond {
+	if _, ok := root.(object); ok && ctx.dst != nil {
+		return &participantLangCondition{participantTypeId: participantTypeIdListener}
+	}
+	return nil
+}
+
+func (g *langCondGenerator) generatorMentioned(_ concept, _ *sntcCtx) langCond {
+	return &mentionedLangCondition{}
 }
 
 type langCondMemory struct {

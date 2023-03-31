@@ -108,7 +108,13 @@ func (a *agentActivity) startAction() {
 		}
 	}
 
-	bestActionType := bestActionTypes[rand.Intn(len(bestActionTypes))]
+	//if len(bestActionTypes) == 0 {
+	//	return
+	//}
+	var bestActionType performableActionType
+	if len(bestActionTypes) > 0 {
+		bestActionType = bestActionTypes[rand.Intn(len(bestActionTypes))]
+	}
 	if bestActionType != nil {
 		a.activeAction = bestActionType.instantiate()
 		if bestActionType.receiverType() != nil {

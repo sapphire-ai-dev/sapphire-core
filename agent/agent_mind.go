@@ -1,8 +1,6 @@
 package agent
 
 import (
-	"fmt"
-	"reflect"
 	"sort"
 )
 
@@ -73,7 +71,6 @@ func (m *agentMind) filteredNewThoughts() map[concept]bool {
 	for c, n := range m.newThoughts {
 		if m.agent.memory.find(c) == c {
 			thoughtList = append(thoughtList, pair{c, n})
-			fmt.Println("??", reflect.TypeOf(c))
 		}
 	}
 
@@ -89,7 +86,6 @@ func (m *agentMind) filteredNewThoughts() map[concept]bool {
 		result[p.c] = true
 	}
 
-	fmt.Println("mind", len(result), m.capacity)
 	return result
 }
 

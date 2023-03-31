@@ -20,6 +20,6 @@ func (a *Agent) newSelfObject(worldId int, args map[int]any) *selfObject {
 	result := &selfObject{
 		worldId: worldId,
 	}
-	a.newAbstractObject(result, nil, &result.abstractObject)
+	a.newAbstractObject(result, args, &result.abstractObject)
 	return result.memorize().(*selfObject)
 }

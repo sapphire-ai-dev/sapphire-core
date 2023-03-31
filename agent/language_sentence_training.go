@@ -13,14 +13,19 @@ type trainSntc struct {
 	language *agentLanguage
 	rootNode *trainSntcNode
 	concepts map[int]concept
+	speaker  object
+	listener object
 }
 
-func (l *agentLanguage) newTrainSntc(body string, rootNode *trainSntcNode, concepts map[int]concept) *trainSntc {
+func (l *agentLanguage) newTrainSntc(body string, rootNode *trainSntcNode, concepts map[int]concept,
+	speaker, listener object) *trainSntc {
 	result := &trainSntc{
 		body:     body,
 		language: l,
 		rootNode: rootNode,
 		concepts: concepts,
+		speaker:  speaker,
+		listener: listener,
 	}
 
 	rootNode.setSentence(result)
@@ -29,6 +34,7 @@ func (l *agentLanguage) newTrainSntc(body string, rootNode *trainSntcNode, conce
 
 type trainSntcNode struct {
 	sentence  *trainSntc
+	parent    *trainSntcNode
 	conceptId int
 	word      string
 	isPronoun bool
@@ -46,34 +52,40 @@ func (l *agentLanguage) collectParts(root concept) (map[int]int, map[int]int) {
 	return forward, backward
 }
 
-func (t *trainSntcNode) build(workingForm *langForm) ([]string, langPart) {
-	root := t.sentence.concepts[t.conceptId]
-	vn := t.sentence.language.findLangNode(reflect.TypeOf(root))
+func (t *trainSntcNode) buildInternalForm(root concept, ln *langNode, ctx *sntcCtx) ([]string, *langForm) {
+	_, backward := t.sentence.language.collectParts(root)
+	var sentence []string
 
-	if len(t.children) != 0 {
-		_, backward := t.sentence.language.collectParts(root)
-		var sentence []string
-
-		newForm := vn.newLangForm()
-		for _, child := range t.children {
-			phrase, childPart := child.build(newForm)
-			if lf, ok := childPart.(*langForm); ok {
-				childPart = lf.newRecursiveLangPart(lf.node.class, backward[child.conceptId])
-				t.sentence.language.registerWordPart(phrase[0], childPart)
-			}
-			newForm.parts = append(newForm.parts, childPart)
-			sentence = append(sentence, phrase...)
+	newForm := ln.newLangForm()
+	for _, child := range t.children {
+		phrase, childPart := child.buildForm(newForm, ctx)
+		if lf, ok := childPart.(*langForm); ok {
+			childPart = lf.newRecursiveLangPart(lf.node.class, backward[child.conceptId])
+			t.sentence.language.registerWordPart(phrase[0], childPart)
 		}
-
-		vn.selectForm(newForm)
-		t.sentence.language.registerWordPart(sentence[0], newForm)
-		return sentence, newForm
+		newForm.parts = append(newForm.parts, childPart)
+		sentence = append(sentence, phrase...)
 	}
 
+	ln.selectForm(newForm)
+	t.sentence.language.registerWordPart(sentence[0], newForm)
+	return sentence, newForm
+}
+
+func (t *trainSntcNode) buildLeafForm(workingForm *langForm, ln *langNode) ([]string, *langForm) {
+	newForm := ln.newLangForm()
+	phrase, childPart := t.buildLeafPart(newForm, ln)
+	newForm.parts = append(newForm.parts, childPart)
+	ln.selectForm(newForm)
+	t.sentence.language.registerWordPart(phrase[0], newForm)
+	return phrase, newForm
+}
+
+func (t *trainSntcNode) buildLeafPart(workingForm *langForm, ln *langNode) ([]string, langPart) {
 	if t.isPronoun {
-		wvp := workingForm.newWordLangPart(vn.class, t.word)
-		t.sentence.language.registerWordPart(t.word, wvp)
-		return []string{t.word}, wvp
+		wlp := workingForm.newWordLangPart(ln.class, t.word)
+		t.sentence.language.registerWordPart(t.word, wlp)
+		return []string{t.word}, wlp
 	} else {
 		tenseId := -1
 		c := t.sentence.concepts[t.conceptId]
@@ -88,11 +100,38 @@ func (t *trainSntcNode) build(workingForm *langForm) ([]string, langPart) {
 			c.abs().tenses[tenseId] = t.word
 		}
 
-		cvp := workingForm.newConceptLangPart(vn.class, tenseId)
-		t.sentence.language.registerWordPart(t.word, cvp)
+		clp := workingForm.newConceptLangPart(ln.class, tenseId)
+		t.sentence.language.registerWordPart(t.word, clp)
 		t.sentence.language.registerWordConcept(t.word, c, tenseId)
-		return []string{t.word}, cvp
+		return []string{t.word}, clp
 	}
+}
+
+func (t *trainSntcNode) buildForm(workingForm *langForm, ctx *sntcCtx) ([]string, langPart) {
+	root := t.sentence.concepts[t.conceptId]
+	ln := t.sentence.language.findLangNode(reflect.TypeOf(root))
+	var sentence []string
+	var newForm *langForm
+
+	if len(t.children) != 0 {
+		sentence, newForm = t.buildInternalForm(root, ln, ctx)
+	} else {
+		sentence, newForm = t.buildLeafForm(workingForm, ln)
+	}
+
+	var parentConcept concept
+	if t.parent != nil {
+		parentConcept = t.sentence.concepts[t.parent.conceptId]
+	}
+
+	condTruth := ln.conditionTruth(root, parentConcept, ctx, map[langCond]bool{})
+	ln.addLog(condTruth, newForm, formValueTrainSntc)
+	return sentence, newForm
+}
+
+func (t *trainSntcNode) build() {
+	ctx := t.sentence.language.newSntcCtx(t.sentence.speaker, t.sentence.listener)
+	t.buildForm(nil, ctx)
 }
 
 func (l *agentLanguage) newTrainSntcNode(conceptId int, word string, isPronoun bool) *trainSntcNode {
@@ -112,6 +151,9 @@ func (t *trainSntcNode) setSentence(s *trainSntc) {
 
 func (t *trainSntcNode) setChildren(children ...*trainSntcNode) {
 	t.children = children
+	for _, child := range children {
+		child.parent = t
+	}
 }
 
 type trainSntcParser struct {
@@ -181,10 +223,21 @@ func (d *trainSntcData) parseSingleConcept(data map[string]any) {
 	}
 }
 
-// todo add body, speaker and listener
 func (d *trainSntcData) parseSingleSntc(concepts map[int]concept, r *TrainSntcRootData) *trainSntc {
 	root := d.parseSingleNode(r.Root)
-	sntc := d.l.newTrainSntc(r.Body, root, concepts)
+	var speaker, listener object
+	if raw, seen := d.namedConcepts[r.Speaker]; seen {
+		if t, ok := raw.(object); ok {
+			speaker = t
+		}
+	}
+	if raw, seen := d.namedConcepts[r.Listener]; seen {
+		if t, ok := raw.(object); ok {
+			listener = t
+		}
+	}
+
+	sntc := d.l.newTrainSntc(r.Body, root, concepts, speaker, listener)
 	return sntc
 }
 

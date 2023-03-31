@@ -120,7 +120,7 @@ func (f *langForm) assumeCondTruth() map[langCond]*bool {
 }
 
 func (f *langForm) interpretFormConcept(fit *sntcFit) {
-	if fit.c != nil {
+	if fit.c != nil && fit.c.isImaginary() == false {
 		return
 	}
 
@@ -145,7 +145,7 @@ func (f *langForm) interpretFormConcept(fit *sntcFit) {
 // progress: list of fits currently using, result: out parameter
 func (f *langForm) fitRecursive(sntc []string, start, curr int, ctx *sntcCtx,
 	progress []*sntcFit, c concept, result map[*sntcFit]bool) {
-	//fmt.Println(f.node.class, len(progress), "/", len(f.parts))
+	//fmt.Println(sntc, f.node.class, "start:", start, "progress:", len(progress), "/", len(f.parts))
 	if len(progress) == len(f.parts) {
 		f.fitForm(start, curr, progress, c, result)
 		return
@@ -209,7 +209,8 @@ func (f *langForm) safeInterpret(fit *sntcFit, cond langCond, truth *bool, ctx *
 		return
 	}
 
-	for _, c := range cond.interpret(fit.c, parentC, truth, ctx) {
+	_, newConcepts := cond.interpret(fit.c, parentC, truth, ctx)
+	for _, c := range newConcepts {
 		ctx.newConcepts[c.id()] = c
 		if r, ok := c.(relation); ok {
 			r.interpret()

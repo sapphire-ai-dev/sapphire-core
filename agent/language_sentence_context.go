@@ -1,9 +1,5 @@
 package agent
 
-import (
-	"reflect"
-)
-
 type sntcCtx struct {
 	// general information
 	convCtx *convCtx
@@ -67,28 +63,6 @@ func (c *sntcCtx) getMatch(start int, p langPart) []*sntcFit {
 	}
 
 	return result
-}
-
-func (c *sntcCtx) filterConcepts(class reflect.Type) map[int]concept {
-	candidates, result := map[int]concept{}, map[int]concept{}
-	if c.src != nil {
-		candidates[c.src.id()] = c.src
-	}
-	if c.dst != nil {
-		candidates[c.dst.id()] = c.dst
-	}
-
-	for _, cc := range c.convCtx.mentioned {
-		candidates[cc.id()] = cc
-	}
-
-	for _, cc := range candidates {
-		if reflect.TypeOf(cc) == class {
-			result[cc.id()] = cc
-		}
-	}
-
-	return candidates
 }
 
 func (l *agentLanguage) newSntcCtx(src, dst object) *sntcCtx {

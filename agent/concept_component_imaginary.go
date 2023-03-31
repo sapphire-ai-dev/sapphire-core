@@ -1,22 +1,22 @@
 package agent
 
-import "reflect"
-
+// used to attach parts to a concept C without knowing what C is
 type conceptCpntImaginary interface {
-	imagineReflect() reflect.Type
+	isImaginary() bool
+	imaginaryFit(_ concept) bool
 }
 
 type conceptImplImaginary struct {
 	abs *abstractConcept
 }
 
-func (i *conceptImplImaginary) imagineReflect() reflect.Type {
-	t, seen := i.abs.agent.record.imagineReflects[reflect.TypeOf(i.abs.self())]
-	if seen {
-		return t
-	}
+// imaginary concept classes are responsible for overriding this method to return true
+func (i *conceptImplImaginary) isImaginary() bool {
+	return false
+}
 
-	return nil
+func (i *conceptImplImaginary) imaginaryFit(_ concept) bool {
+	return true
 }
 
 func (a *Agent) newConceptImplImaginary(abs *abstractConcept) {
