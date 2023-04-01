@@ -1,5 +1,7 @@
 package agent
 
+import "reflect"
+
 type concept interface {
 	abs() *abstractConcept
 	self() concept
@@ -34,6 +36,18 @@ func (c *abstractConcept) clean(r *memReference) {
 	c.conceptImplDecorator.clean(r)
 }
 
+func (c *abstractConcept) part(partId int) concept {
+	if partId == partIdConceptContext {
+		return c.ctx()
+	}
+
+	if partId == partIdConceptTime {
+		return c.time()
+	}
+
+	return nil
+}
+
 func (a *Agent) newAbstractConcept(self concept, args map[int]any, out **abstractConcept) {
 	*out = &abstractConcept{
 		agent: a,
@@ -45,6 +59,7 @@ func (a *Agent) newAbstractConcept(self concept, args map[int]any, out **abstrac
 	a.newConceptImplSync(*out)
 	a.newConceptImplLang(*out)
 	a.newConceptImplDecorator(*out)
+	a.newConceptImplImaginary(*out)
 
 	if ctx, seen := conceptArg[*contextObject](args, conceptArgContext); seen {
 		(*out).setCtx(ctx)
@@ -56,3 +71,8 @@ const (
 	conceptSourceGeneralization
 	conceptSourceLanguage
 )
+
+// if struct S implements an interface, a variable s with type S would produce s != nil therefore must use reflect
+func isNil(c any) bool {
+	return c == nil || reflect.ValueOf(c).IsNil()
+}

@@ -142,7 +142,7 @@ func (m *typeMemory) find(c any) concept {
 		return result
 	}
 
-	if c == nil || reflect.ValueOf(c).IsNil() {
+	if isNil(c) {
 		return nil
 	}
 

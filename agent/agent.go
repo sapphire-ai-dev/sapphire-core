@@ -9,13 +9,16 @@ type Agent struct {
 	aspect     *agentAspect
 	perception *agentPerception
 	symbolic   *agentSymbolicRecord
+	logic      *agentLogicRecord
 	activity   *agentActivity
+	time       *agentTime
 
 	self   *selfObject
 	record *partRecord
 }
 
 func (a *Agent) cycle() {
+	a.time.cycle()
 	a.perception.cycle()
 	a.mind.cycle()
 	a.activity.cycle()
@@ -30,7 +33,9 @@ func NewAgent() *Agent {
 	result.newAgentAspect()
 	result.newAgentPerception()
 	result.newAgentSymbolicRecord()
+	result.newAgentLogicRecord()
 	result.newAgentActivity(actionInterfaces)
+	result.newAgentTime()
 
 	result.self = result.newSelfObject(worldId, nil)
 	result.record = result.newPartRecord()

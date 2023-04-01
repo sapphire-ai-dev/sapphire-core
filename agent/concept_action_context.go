@@ -2,15 +2,16 @@ package agent
 
 type createContextAction struct {
 	*abstractAction
+	contextId int // todo: to be replaced
 }
 
 func (a *createContextAction) match(other concept) bool {
 	o, ok := other.(*createContextAction)
-	return ok && a.abstractAction.match(o.abstractAction)
+	return ok && a.abstractAction.match(o.abstractAction) && a.contextId == o.contextId
 }
 
-func (a *Agent) newCreateContextAction(t *createContextActionType, performer object) *createContextAction {
-	result := &createContextAction{}
+func (a *Agent) newCreateContextAction(t *createContextActionType, performer object, contextId int) *createContextAction {
+	result := &createContextAction{contextId: contextId}
 	a.newAbstractAction(result, t, performer, nil, &result.abstractAction)
 	return result.memorize().(*createContextAction)
 }

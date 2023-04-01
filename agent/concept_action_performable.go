@@ -41,16 +41,10 @@ func (a *abstractPerformableAction) debugArgs() map[string]any {
 }
 
 func (a *abstractPerformableAction) part(partId int) concept {
-	if partId == partIdActionT {
-		return a._type()
-	}
-	if partId == partIdActionPerformer {
-		return a.performer()
-	}
 	if partId == partIdActionReceiver {
 		return a.receiver()
 	}
-	return nil
+	return a.abstractAction.part(partId)
 }
 
 func (a *abstractPerformableAction) state() int {

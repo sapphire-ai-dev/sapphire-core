@@ -5,15 +5,6 @@ import (
 	"testing"
 )
 
-func newContextObject(agent *Agent) *contextObject {
-	ccat := agent.newCreateContextActionType()
-	cca := agent.newCreateContextAction(ccat, agent.self)
-	cot := agent.newContextObjectType(conceptSourceObservation)
-	co := agent.newContextObject(cca)
-	co.addType(cot)
-	return co
-}
-
 func TestAuxiliaryRelationTypeConstructor(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	art := agent.newAuxiliaryRelationType(auxiliaryTypeIdWant, nil)
@@ -27,7 +18,7 @@ func TestAuxiliaryRelationConstructor(t *testing.T) {
 	tai := newTestActionInterface()
 	tai.ReadyResult, tai.StepCount = true, 0
 	aat := agent.newAtomicActionType(tai.instantiate(), nil)
-	co := newContextObject(agent)
+	co := newTestContext(agent, 0)
 	aa := agent.newAtomicAction(aat, agent.self, map[int]any{co.cid: co})
 
 	asct := agent.newActionStateChangeType(aat, nil)

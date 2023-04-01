@@ -10,7 +10,7 @@ func TestConceptCtxMatch(t *testing.T) {
 	tc := agent.newTestConcept(1, nil)
 
 	ccat := agent.newCreateContextActionType()
-	cca := agent.newCreateContextAction(ccat, agent.self)
+	cca := agent.newCreateContextAction(ccat, agent.self, 0)
 	cot := agent.newContextObjectType(conceptSourceObservation)
 	co := agent.newContextObject(cca)
 	co.addType(cot)

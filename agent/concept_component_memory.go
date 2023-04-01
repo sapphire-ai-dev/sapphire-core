@@ -192,3 +192,13 @@ func matchRefs(l, r *memReference) bool {
 	}
 	return l.c == r.c
 }
+
+func matchConcepts(l, r concept) bool {
+	if isNil(l) && isNil(r) {
+		return true
+	}
+	if isNil(l) || isNil(r) {
+		return false
+	}
+	return l.match(r)
+}

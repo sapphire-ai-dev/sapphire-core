@@ -35,6 +35,20 @@ func (r *abstractRelation) match(o *abstractRelation) bool {
 	return r.abstractConcept.match(o.abstractConcept)
 }
 
+func (r *abstractRelation) matchReverse(o *abstractRelation) bool {
+	if r._lTarget.c != o._rTarget.c || r._rTarget.c != o._lTarget.c || len(r.params) != len(o.params) {
+		return false
+	}
+
+	for rParamKey := range r.params {
+		if oVal, seen := o.params[rParamKey]; !seen || r.params[rParamKey] != oVal {
+			return false
+		}
+	}
+
+	return r.abstractConcept.match(o.abstractConcept)
+}
+
 func (r *abstractRelation) part(partId int) concept {
 	if partId == partIdRelationT {
 		return r._type()

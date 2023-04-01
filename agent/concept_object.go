@@ -21,6 +21,18 @@ func (o *abstractObject) match(n *abstractObject) bool {
 	return o.abstractConcept.match(n.abstractConcept)
 }
 
+func (o *abstractObject) part(partId int) concept {
+	if partId == partIdObjectT {
+		for _, t := range o.types() {
+			if _, ok := t.(*simpleObjectType); ok {
+				return t
+			}
+		}
+	}
+
+	return o.abstractConcept.part(partId)
+}
+
 func (o *abstractObject) clean(r *memReference) {
 	o.abstractConcept.clean(r)
 	delete(o._types, r.c.id())

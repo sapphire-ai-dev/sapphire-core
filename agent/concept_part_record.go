@@ -114,6 +114,8 @@ func (r *partRecord) newConceptClass(class reflect.Type) *conceptClass {
 
 const (
 	partIdStart = iota
+	partIdConceptContext
+	partIdConceptTime
 	partIdActionT
 	partIdActionPerformer
 	partIdActionReceiver

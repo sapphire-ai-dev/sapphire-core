@@ -10,14 +10,7 @@ func (o *simpleObject) part(partId int) concept {
 		return o.agent.symbolic.numerics.number1
 	}
 
-	if partId == partIdObjectT {
-		for _, t := range o.types() {
-			if _, ok := t.(*simpleObjectType); ok {
-				return t
-			}
-		}
-	}
-	return nil
+	return o.abstractObject.part(partId)
 }
 
 func (o *simpleObject) match(other concept) bool {

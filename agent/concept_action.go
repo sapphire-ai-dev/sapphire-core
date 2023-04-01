@@ -20,6 +20,16 @@ func (a *abstractAction) match(o *abstractAction) bool {
 	return a.abstractConcept.match(o.abstractConcept) && a.t.c == o.t.c && a._performer.c == o._performer.c
 }
 
+func (a *abstractAction) part(partId int) concept {
+	if partId == partIdActionT {
+		return a._type()
+	}
+	if partId == partIdActionPerformer {
+		return a.performer()
+	}
+	return a.abstractConcept.part(partId)
+}
+
 func (a *abstractAction) _type() actionType {
 	return parseRef[actionType](a.agent, a.t)
 }
