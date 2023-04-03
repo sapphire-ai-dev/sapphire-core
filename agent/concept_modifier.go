@@ -11,7 +11,7 @@ type modifierType interface {
 	conditionType
 	sources() map[int]bool
 	addSource(source int)
-	instantiate(target concept, source int, args ...any) modifier
+	instantiate(target concept, source int, args map[int]any, modifArgs ...any) modifier
 }
 
 type abstractModifier struct {
@@ -43,6 +43,20 @@ func (m *abstractModifier) target() concept {
 
 func (m *abstractModifier) _type() modifierType {
 	return parseRef[modifierType](m.agent, m.t)
+}
+
+func (m *abstractModifier) collectVersions() map[int]concept {
+	result := map[int]concept{}
+	for _, c := range m.target().modifiers(map[int]any{
+		conceptArgContext: m.ctx(),
+		conceptArgTime:    m.time(),
+	}) {
+		if m._self.versionCollides(c) {
+			result[c.id()] = c
+		}
+	}
+
+	return result
 }
 
 func (m *abstractModifier) instShareParts() map[int]int {

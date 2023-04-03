@@ -13,6 +13,8 @@ type Agent struct {
 	activity   *agentActivity
 	time       *agentTime
 
+	trainer *scenarioTrainer
+
 	self   *selfObject
 	record *partRecord
 }
@@ -36,6 +38,8 @@ func NewAgent() *Agent {
 	result.newAgentLogicRecord()
 	result.newAgentActivity(actionInterfaces)
 	result.newAgentTime()
+
+	result.newScenarioTrainer()
 
 	result.self = result.newSelfObject(worldId, nil)
 	result.record = result.newPartRecord()

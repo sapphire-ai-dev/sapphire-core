@@ -58,7 +58,7 @@ func (t *trainSntcNode) buildInternalForm(root concept, ln *langNode, ctx *sntcC
 
 	newForm := ln.newLangForm()
 	for _, child := range t.children {
-		phrase, childPart := child.buildForm(newForm, ctx)
+		phrase, childPart := child.buildForm(ctx)
 		if lf, ok := childPart.(*langForm); ok {
 			childPart = lf.newRecursiveLangPart(lf.node.class, backward[child.conceptId])
 			t.sentence.language.registerWordPart(phrase[0], childPart)
@@ -72,7 +72,7 @@ func (t *trainSntcNode) buildInternalForm(root concept, ln *langNode, ctx *sntcC
 	return sentence, newForm
 }
 
-func (t *trainSntcNode) buildLeafForm(workingForm *langForm, ln *langNode) ([]string, *langForm) {
+func (t *trainSntcNode) buildLeafForm(ln *langNode) ([]string, *langForm) {
 	newForm := ln.newLangForm()
 	phrase, childPart := t.buildLeafPart(newForm, ln)
 	newForm.parts = append(newForm.parts, childPart)
@@ -107,7 +107,7 @@ func (t *trainSntcNode) buildLeafPart(workingForm *langForm, ln *langNode) ([]st
 	}
 }
 
-func (t *trainSntcNode) buildForm(workingForm *langForm, ctx *sntcCtx) ([]string, langPart) {
+func (t *trainSntcNode) buildForm(ctx *sntcCtx) ([]string, langPart) {
 	root := t.sentence.concepts[t.conceptId]
 	ln := t.sentence.language.findLangNode(reflect.TypeOf(root))
 	var sentence []string
@@ -116,7 +116,7 @@ func (t *trainSntcNode) buildForm(workingForm *langForm, ctx *sntcCtx) ([]string
 	if len(t.children) != 0 {
 		sentence, newForm = t.buildInternalForm(root, ln, ctx)
 	} else {
-		sentence, newForm = t.buildLeafForm(workingForm, ln)
+		sentence, newForm = t.buildLeafForm(ln)
 	}
 
 	var parentConcept concept
@@ -131,7 +131,7 @@ func (t *trainSntcNode) buildForm(workingForm *langForm, ctx *sntcCtx) ([]string
 
 func (t *trainSntcNode) build() {
 	ctx := t.sentence.language.newSntcCtx(t.sentence.speaker, t.sentence.listener)
-	t.buildForm(nil, ctx)
+	t.buildForm(ctx)
 }
 
 func (l *agentLanguage) newTrainSntcNode(conceptId int, word string, isPronoun bool) *trainSntcNode {
@@ -160,7 +160,7 @@ type trainSntcParser struct {
 	l *agentLanguage
 }
 
-func (p *trainSntcParser) parse(file string) ([]*trainSntc, map[int]concept) {
+func (p *trainSntcParser) parse(file string) (*trainSntcData, []*trainSntc, map[int]concept) {
 	var data *trainSntcData
 	jsonFile, err := os.Open(file)
 	printErr(err)
@@ -170,12 +170,13 @@ func (p *trainSntcParser) parse(file string) ([]*trainSntc, map[int]concept) {
 	printErr(json.Unmarshal(byteValue, &data))
 
 	if data == nil {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	printErr(jsonFile.Close())
 	data.l = p.l
-	return data.parse()
+	sentences, concepts := data.parse()
+	return data, sentences, concepts
 }
 
 func (l *agentLanguage) newTrainSntcParser() {

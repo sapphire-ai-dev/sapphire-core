@@ -27,7 +27,7 @@ func (p *agentPerception) processImage(img *world.Image) {
 		obj.addType(objType)
 	}
 	for modifTypeId, modifType := range modifTypes {
-		modif := modifType.instantiate(obj, conceptSourceObservation, instantiateArgs[modifTypeId]...)
+		modif := modifType.instantiate(obj, conceptSourceObservation, nil, instantiateArgs[modifTypeId]...)
 		p.agent.mind.add(modif)
 	}
 

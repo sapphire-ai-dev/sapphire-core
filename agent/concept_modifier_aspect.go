@@ -10,20 +10,31 @@ func (m *aspectModifier) match(other concept) bool {
 	return ok && m.abstractModifier.match(o.abstractModifier) && matchParams(m.params, o.params)
 }
 
-func (m *aspectModifier) override(other concept) concept {
+func (m *abstractModifier) versionCollides(other concept) bool {
 	o, ok := other.(*aspectModifier)
 	if !ok || m.target() != o.target() {
-		return nil
+		return false
 	}
 
 	mType := m._type().(*aspectModifierType)
 	oType := o._type().(*aspectModifierType)
-	if mType.aspect == oType.aspect || mType.aspect.parent == oType.aspect.parent {
-		return m
-	}
-
-	return nil
+	return mType.aspect == oType.aspect || mType.aspect.parent == oType.aspect.parent
 }
+
+//func (m *aspectModifier) override(other concept) concept {
+//	o, ok := other.(*aspectModifier)
+//	if !ok || m.target() != o.target() {
+//		return nil
+//	}
+//
+//	mType := m._type().(*aspectModifierType)
+//	oType := o._type().(*aspectModifierType)
+//	if mType.aspect == oType.aspect || mType.aspect.parent == oType.aspect.parent {
+//		return m
+//	}
+//
+//	return nil
+//}
 
 func (m *aspectModifier) debugArgs() map[string]any {
 	args := m.abstractModifier.debugArgs()
@@ -61,18 +72,18 @@ func (t *aspectModifierType) debugArgs() map[string]any {
 	return args
 }
 
-func (t *aspectModifierType) instantiate(target concept, source int, args ...any) modifier {
+func (t *aspectModifierType) instantiate(target concept, source int, args map[int]any, modifArgs ...any) modifier {
 	params := map[string]any{}
-	if len(args) > 0 {
-		params["totalValue"] = args[0]
+	if len(modifArgs) > 0 {
+		params["totalValue"] = modifArgs[0]
 	}
 
-	return t.agent.newAspectModifier(t, target, source, nil, params).memorize().(*aspectModifier)
+	return t.agent.newAspectModifier(t, target, source, args, params).memorize().(*aspectModifier)
 }
 
 func (t *aspectModifierType) verify(_ ...any) *bool {
 	if target, seen := t.lockMap[partIdModifierTarget]; seen {
-		for _, m := range target.modifiers() {
+		for _, m := range target.modifiers(nil) {
 			if m._type() == t._self {
 				return ternary(true)
 			}

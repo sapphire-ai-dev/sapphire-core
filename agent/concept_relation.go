@@ -130,7 +130,7 @@ func (t *abstractRelationType) verifyInsts() (map[int]relation, *bool) {
 		return insts, nil
 	}
 
-	for _, r := range lTarget.relations() {
+	for _, r := range lTarget.relations(nil) {
 		if r._type() == t._self {
 			insts[r.id()] = r
 			// todo: this is not correct for all cases, the logic here is, if there is a relation
@@ -143,7 +143,7 @@ func (t *abstractRelationType) verifyInsts() (map[int]relation, *bool) {
 		}
 	}
 
-	for _, r := range rTarget.relations() {
+	for _, r := range rTarget.relations(nil) {
 		if r._type() == t._self {
 			insts[r.id()] = r
 			// todo: same as above

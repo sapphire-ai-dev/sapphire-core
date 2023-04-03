@@ -126,6 +126,7 @@ func (m *typeMemory) add(c concept) concept {
 		m.dllHead.connect(m.items[freeId])
 		m.items[freeId].connect(first)
 		result = c
+		c.updateVersions()
 	}
 
 	return result

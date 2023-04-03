@@ -1,9 +1,9 @@
 package agent
 
 type conceptCpntDecorator interface {
-	modifiers() map[int]modifier
+	modifiers(args map[int]any) map[int]modifier
 	addModifier(m modifier)
-	relations() map[int]relation
+	relations(args map[int]any) map[int]relation
 	genPartRelations() map[int]relation
 	applyPartRelation(relation *partRelation)
 	genIdentityRelations() map[int]relation
@@ -22,8 +22,13 @@ type conceptImplDecorator struct {
 	_time      *memReference
 }
 
-func (d *conceptImplDecorator) modifiers() map[int]modifier {
-	return parseRefs[modifier](d.abs.agent, d._modifiers)
+func (d *conceptImplDecorator) modifiers(args map[int]any) map[int]modifier {
+	result := parseRefs[modifier](d.abs.agent, d._modifiers)
+	if temporal, seen := conceptArg[temporalObject](args, conceptArgTime); seen {
+		result = filterOverlapTemporal[modifier](d.abs.agent.time, result, temporal)
+	}
+
+	return result
 }
 
 func (d *conceptImplDecorator) addModifier(m modifier) {
@@ -35,30 +40,35 @@ func (d *conceptImplDecorator) addModifier(m modifier) {
 		return
 	}
 
-	for _, oldModifierRef := range d._modifiers {
-		// old modifier is inconsistent with memory (already deleted), continue for now, clean up should happen soon
-		if oldModifierRef.c == nil {
-			continue
-		}
-
-		mergedModifier := m.override(oldModifierRef.c)
-		// self merged into existing - exit
-		if mergedModifier == oldModifierRef.c {
-			return
-		}
-
-		// existing merged into self - delete existing and keep merging
-		if mergedModifier != nil {
-			d.abs.agent.memory.remove(oldModifierRef.c)
-			m = mergedModifier.(modifier)
-		}
-	}
+	//for _, oldModifierRef := range d._modifiers {
+	//	// old modifier is inconsistent with memory (already deleted), continue for now, clean up should happen soon
+	//	if oldModifierRef.c == nil {
+	//		continue
+	//	}
+	//
+	//	mergedModifier := m.override(oldModifierRef.c)
+	//	// self merged into existing - exit
+	//	if mergedModifier == oldModifierRef.c {
+	//		return
+	//	}
+	//
+	//	// existing merged into self - delete existing and keep merging
+	//	if mergedModifier != nil {
+	//		d.abs.agent.memory.remove(oldModifierRef.c)
+	//		m = mergedModifier.(modifier)
+	//	}
+	//}
 
 	d._modifiers[m.id()] = m.createReference(d.abs._self, false)
 }
 
-func (d *conceptImplDecorator) relations() map[int]relation {
-	return parseRefs[relation](d.abs.agent, d._relations)
+func (d *conceptImplDecorator) relations(args map[int]any) map[int]relation {
+	result := parseRefs[relation](d.abs.agent, d._relations)
+	if temporal, seen := conceptArg[temporalObject](args, conceptArgTime); seen {
+		result = filterOverlapTemporal[relation](d.abs.agent.time, result, temporal)
+	}
+
+	return result
 }
 
 // to be implemented per class
@@ -82,7 +92,9 @@ func (d *conceptImplDecorator) ctx() *contextObject {
 }
 
 func (d *conceptImplDecorator) setCtx(ctx *contextObject) {
-	d._ctx = ctx.createReference(d.abs._self, true)
+	if !isNil(ctx) {
+		d._ctx = ctx.createReference(d.abs._self, true)
+	}
 }
 
 func (d *conceptImplDecorator) time() temporalObject {
@@ -90,7 +102,9 @@ func (d *conceptImplDecorator) time() temporalObject {
 }
 
 func (d *conceptImplDecorator) setTime(time temporalObject) {
-	d._time = time.createReference(d.abs._self, false)
+	if time != nil {
+		d._time = time.createReference(d.abs._self, false)
+	}
 }
 
 func (d *conceptImplDecorator) clean(r *memReference) {

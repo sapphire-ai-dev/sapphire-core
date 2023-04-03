@@ -11,37 +11,31 @@ func (t *agentTime) cycle() {
 	t.now = t.agent.newTimePointObject(&t.clock, nil)
 }
 
-// currently only supports time points with non-nil clock times
-func (t *agentTime) temporalObjJoin(l, r temporalObject) temporalObject {
-	ok, lsc, lec, rsc, rec, ctx := t.temporalObjBreakdownHelper(l, r)
-	if !ok {
+// currently assume nil start is beginning of time, nil end is end of time
+// even for a time point object, if it does not provide a clock time, assume it's a time segment that spans infinitely
+func (t *agentTime) temporalObjJoin(l, r temporalObject, ordered bool) temporalObject {
+
+	ctx, commonFound := t.agent.commonCtx(l, r)
+	if !commonFound {
 		return nil
 	}
 
-	if lsc == rsc && lsc == lec && rsc == rec {
-		r.replace(l)
-		return l
+	lp, lIsPoint := l.(*timePointObject)
+	rp, rIsPoint := r.(*timePointObject)
+	if lIsPoint && rIsPoint && ordered {
+		if !isNil(l) && !isNil(r) && l.match(r) {
+			return l
+		}
+
+		return t.agent.newTimeSegmentObject(lp, rp, map[int]any{conceptArgContext: ctx})
 	}
 
-	var s, e *timePointObject
-	if lsc > rsc {
-		s = r.start()
-	} else {
-		s = l.start()
+	if isNil(l) || isNil(r) {
+		return nil
 	}
 
-	if lec > rec {
-		e = l.end()
-	} else {
-		e = r.end()
-	}
-
-	args := map[int]any{}
-	if ctx != nil {
-		args[conceptArgContext] = ctx
-	}
-
-	return t.agent.newTimeSegmentObject(s, e, args)
+	s, e := t.timePointMin(l.start(), r.start()), t.timePointMax(l.end(), r.end())
+	return t.agent.newTimeSegmentObject(s, e, map[int]any{conceptArgContext: ctx})
 }
 
 // currently only supports time points with non-nil clock times
@@ -102,6 +96,82 @@ func (t *agentTime) temporalObjBreakdownHelper(l, r temporalObject) (bool, int, 
 	}
 
 	return true, *ls.clockTime, *le.clockTime, *rs.clockTime, *re.clockTime, l.ctx()
+}
+
+func (a *Agent) commonCtx(l, r concept) (*contextObject, bool) {
+	var lCtx, rCtx *contextObject
+	if !isNil(l) {
+		lCtx = l.ctx()
+	}
+	if !isNil(r) {
+		rCtx = r.ctx()
+	}
+
+	if !matchConcepts(lCtx, rCtx) {
+		return nil, false
+	}
+
+	return lCtx, true
+}
+
+func filterOverlapTemporal[T concept](t *agentTime, concepts map[int]T, temporal temporalObject) map[int]T {
+	if temporal == nil {
+		return concepts
+	}
+
+	var ts, te *int
+	if !isNil(temporal.start()) {
+		ts = temporal.start().clockTime
+	}
+	if !isNil(temporal.end()) {
+		te = temporal.end().clockTime
+	}
+
+	result := map[int]T{}
+	for _, c := range concepts {
+		var cs, ce *int
+		if !isNil(c.time()) && !isNil(c.time().start()) {
+			cs = c.time().start().clockTime
+		}
+		if !isNil(c.time()) && !isNil(c.time().end()) {
+			ce = c.time().end().clockTime
+		}
+		if c.time() == nil || t.overlaps(cs, ce, ts, te) {
+			result[c.id()] = c
+		}
+	}
+
+	return result
+}
+
+func (t *agentTime) overlaps(ls, le, rs, re *int) bool {
+	leGERs := !(le != nil && rs != nil && *le < *rs)
+	lsLERe := !(ls != nil && re != nil && *ls > *re)
+	return leGERs && lsLERe
+}
+
+func (t *agentTime) timePointMin(l, r *timePointObject) *timePointObject {
+	if isNil(l) || isNil(r) || l.clockTime == nil || r.clockTime == nil {
+		return nil
+	}
+
+	if *l.clockTime <= *r.clockTime {
+		return l
+	}
+
+	return r
+}
+
+func (t *agentTime) timePointMax(l, r *timePointObject) *timePointObject {
+	if isNil(l) || isNil(r) || l.clockTime == nil || r.clockTime == nil {
+		return nil
+	}
+
+	if *l.clockTime >= *r.clockTime {
+		return l
+	}
+
+	return r
 }
 
 func (a *Agent) newAgentTime() {

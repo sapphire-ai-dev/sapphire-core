@@ -60,7 +60,7 @@ func TestTrainingSentence(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	agent := newEmptyWorldAgent()
-	sentences, _ := agent.language.trainParser.parse("data/data.json")
+	_, sentences, _ := agent.language.trainParser.parse("data/data.json")
 	for _, sentence := range sentences {
 		sentence.rootNode.build()
 	}
@@ -74,7 +74,7 @@ func TestParse(t *testing.T) {
 
 func TestParsePronoun(t *testing.T) {
 	agent := newEmptyWorldAgent()
-	sentences, _ := agent.language.trainParser.parse("data/pronoun.json")
+	_, sentences, _ := agent.language.trainParser.parse("data/pronoun.json")
 	for _, sentence := range sentences {
 		sentence.rootNode.build()
 	}

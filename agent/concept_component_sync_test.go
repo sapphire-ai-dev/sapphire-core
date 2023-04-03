@@ -11,7 +11,7 @@ func TestConceptCpntSyncInstShareParts(t *testing.T) {
 	assert.NotNil(t, tc.instShareParts())
 
 	amt := agent.newAspectModifierType(agent.aspect.find([]string{"info1", "info2"}...), nil)
-	am := amt.instantiate(tc, conceptSourceObservation)
+	am := amt.instantiate(tc, conceptSourceObservation, nil)
 	assert.Equal(t, partIdModifierTarget, am.instShareParts()[tc.id()])
 }
 
@@ -23,7 +23,7 @@ func TestConceptCpntSyncTypeUpdateSync(t *testing.T) {
 	assert.Empty(t, aat.syncMap)
 
 	so := agent.newSimpleObject(1, nil)
-	am := amt.instantiate(so, conceptSourceObservation)
+	am := amt.instantiate(so, conceptSourceObservation, nil)
 	aa := aat.instantiate()
 	aa.setReceiver(so)
 	amt.typeUpdateSync(aat, am.instShareParts(), aa.instShareParts())
@@ -44,7 +44,7 @@ func TestConceptCpntSyncTypeLockSync(t *testing.T) {
 	amt := agent.newAspectModifierType(agent.aspect.find([]string{"info1", "info2"}...), nil)
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
 	so := agent.newSimpleObject(1, nil)
-	am := amt.instantiate(so, conceptSourceObservation)
+	am := amt.instantiate(so, conceptSourceObservation, nil)
 	aa := aat.instantiate()
 	aa.setReceiver(so)
 	amt.typeUpdateSync(aat, am.instShareParts(), aa.instShareParts())

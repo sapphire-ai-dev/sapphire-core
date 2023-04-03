@@ -8,7 +8,6 @@ import (
 type conceptCpntMemory interface {
 	id() int
 	match(other concept) bool
-	override(old concept) (merged concept)
 	createReference(user concept, hardDependency bool) *memReference
 	deprecate()
 	clean(r *memReference) // prevent memory leak from soft dependencies
@@ -104,12 +103,11 @@ func (c *abstractConcept) match(o *abstractConcept) bool {
 		return false
 	}
 
-	// looks weird so far but later there might be more than just context to compare
-	return true
-}
+	if !matchRefs(c._time, o._time) {
+		return false
+	}
 
-func (c *abstractConcept) override(_ concept) concept {
-	return nil
+	return true
 }
 
 func (a *Agent) newConceptImplMemory(abs *abstractConcept) {

@@ -106,7 +106,7 @@ func TestTimePointObjectWithContext(t *testing.T) {
 
 	assert.Equal(t, tso, agent.newTimeSegmentObject(tpo0, tpo1, nil))
 	co1 := newTestContext(agent, 1)
-	assert.Nil(t, agent.newTimeSegmentObject(nil, nil, nil))
+	assert.NotNil(t, agent.newTimeSegmentObject(nil, nil, nil))
 	assert.Nil(t, agent.newTimeSegmentObject(tpo0, tpo1, map[int]any{conceptArgContext: co1}))
 }
 

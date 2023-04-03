@@ -44,7 +44,7 @@ func (o *timePointObject) end() *timePointObject {
 }
 
 func (o *timePointObject) join(other temporalObject) temporalObject {
-	return o.agent.time.temporalObjJoin(o, other)
+	return o.agent.time.temporalObjJoin(o, other, false)
 }
 
 func (o *timePointObject) compare(other temporalObject) map[int]relation {
@@ -65,7 +65,7 @@ type timeSegmentObject struct {
 
 func (o *timeSegmentObject) match(other concept) bool {
 	n, ok := other.(*timeSegmentObject)
-	return ok && o.abstractObject.match(n.abstractObject) && o._start.c.match(n._start.c) && o._end.c.match(n._end.c)
+	return ok && o.abstractObject.match(n.abstractObject) && matchRefs(o._start, n._start) && matchRefs(o._end, n._end)
 }
 
 func (o *timeSegmentObject) start() *timePointObject {
@@ -77,25 +77,37 @@ func (o *timeSegmentObject) end() *timePointObject {
 }
 
 func (o *timeSegmentObject) join(other temporalObject) temporalObject {
-	return o.agent.time.temporalObjJoin(o, other)
+	return o.agent.time.temporalObjJoin(o, other, false)
 }
 
 func (o *timeSegmentObject) compare(other temporalObject) map[int]relation {
 	return o.agent.time.temporalObjCompare(o, other)
 }
 
-func (a *Agent) newTimeSegmentObject(start, end *timePointObject, args map[int]any) *timeSegmentObject {
-	if start == nil || end == nil || !matchConcepts(start.ctx(), end.ctx()) {
+func (a *Agent) newTimeSegmentObject(start, end *timePointObject, args map[int]any) temporalObject {
+	if !isNil(start) && !isNil(end) && start.match(end) {
+		return start
+	}
+
+	// todo assert end > start
+	ctx, found := a.commonCtx(start, end)
+	if !found {
 		return nil
 	}
 
 	collision := false
-	if args, collision = injectConceptArg(args, conceptArgContext, start.ctx()); collision {
+	if args, collision = injectConceptArg(args, conceptArgContext, ctx); collision {
 		return nil
 	}
 	result := &timeSegmentObject{}
 	a.newAbstractObject(result, args, &result.abstractObject)
-	result._start = start.createReference(result, true)
-	result._end = end.createReference(result, true)
+
+	if start != nil {
+		result._start = start.createReference(result, true)
+	}
+
+	if end != nil {
+		result._end = end.createReference(result, true)
+	}
 	return result.memorize().(*timeSegmentObject)
 }

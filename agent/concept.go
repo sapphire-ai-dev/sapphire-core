@@ -11,6 +11,8 @@ type concept interface {
 	conceptCpntLang
 	conceptCpntDecorator
 	conceptCpntImaginary
+	conceptCpntGroup
+	conceptCpntVersioning
 }
 
 type abstractConcept struct {
@@ -22,6 +24,8 @@ type abstractConcept struct {
 	*conceptImplLang
 	*conceptImplDecorator
 	*conceptImplImaginary
+	*conceptImplGroup
+	*conceptImplVersioning
 }
 
 func (c *abstractConcept) abs() *abstractConcept {
@@ -60,9 +64,15 @@ func (a *Agent) newAbstractConcept(self concept, args map[int]any, out **abstrac
 	a.newConceptImplLang(*out)
 	a.newConceptImplDecorator(*out)
 	a.newConceptImplImaginary(*out)
+	a.newConceptImplGroup(*out)
+	a.newConceptImplVersioning(*out)
 
 	if ctx, seen := conceptArg[*contextObject](args, conceptArgContext); seen {
 		(*out).setCtx(ctx)
+	}
+
+	if temporal, seen := conceptArg[temporalObject](args, conceptArgTime); seen {
+		(*out).setTime(temporal)
 	}
 }
 
