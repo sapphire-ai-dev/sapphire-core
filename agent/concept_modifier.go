@@ -59,6 +59,24 @@ func (m *abstractModifier) collectVersions() map[int]concept {
 	return result
 }
 
+func (m *abstractModifier) replicaFinalize() {
+	m.memorize()
+	m.target().addModifier(m._self.(modifier))
+}
+
+func (m *abstractModifier) buildGroup(others map[int]concept) concept {
+	members := map[int]modifier{m.cid: m._self.(modifier)}
+	for _, other := range others {
+		if otherModifier, ok := other.(modifier); !ok {
+			return nil
+		} else {
+			members[otherModifier.id()] = otherModifier
+		}
+	}
+
+	return m.agent.newGroupModifier(members, nil)
+}
+
 func (m *abstractModifier) instShareParts() map[int]int {
 	return map[int]int{
 		m._target.c.id(): partIdModifierTarget,

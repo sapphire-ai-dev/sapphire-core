@@ -10,7 +10,7 @@ func (m *aspectModifier) match(other concept) bool {
 	return ok && m.abstractModifier.match(o.abstractModifier) && matchParams(m.params, o.params)
 }
 
-func (m *abstractModifier) versionCollides(other concept) bool {
+func (m *aspectModifier) versionCollides(other concept) bool {
 	o, ok := other.(*aspectModifier)
 	if !ok || m.target() != o.target() {
 		return false
@@ -21,20 +21,18 @@ func (m *abstractModifier) versionCollides(other concept) bool {
 	return mType.aspect == oType.aspect || mType.aspect.parent == oType.aspect.parent
 }
 
-//func (m *aspectModifier) override(other concept) concept {
-//	o, ok := other.(*aspectModifier)
-//	if !ok || m.target() != o.target() {
-//		return nil
-//	}
-//
-//	mType := m._type().(*aspectModifierType)
-//	oType := o._type().(*aspectModifierType)
-//	if mType.aspect == oType.aspect || mType.aspect.parent == oType.aspect.parent {
-//		return m
-//	}
-//
-//	return nil
-//}
+// also disjoints self from target to prevent infinite recursion on versioning component
+func (m *aspectModifier) replicate() concept {
+	delete(m.target().abs()._modifiers, m.cid)
+	result := &aspectModifier{params: m.params}
+	args := map[int]any{}
+	if m.ctx() != nil {
+		args[conceptArgContext] = m.ctx()
+	}
+
+	m.agent.newAbstractModifier(result, m._type(), m.target(), m.source(), args, &result.abstractModifier)
+	return result
+}
 
 func (m *aspectModifier) debugArgs() map[string]any {
 	args := m.abstractModifier.debugArgs()
@@ -70,6 +68,22 @@ func (t *aspectModifierType) debugArgs() map[string]any {
 	args := t.abstractModifierType.debugArgs()
 	args["aspect"] = t.aspect.toString()
 	return args
+}
+
+func (t *aspectModifierType) generalize(other concept) {
+	o, ok := generalizeHeader[*aspectModifierType](t, other, t.abstractModifierType)
+	if !ok {
+		return
+	}
+
+	gAsp := t.agent.aspect.lowestCommonAncestor(t.aspect, o.aspect)
+	args := map[int]any{}
+	if ctx, ctxMatch := t.agent.commonCtx(t, o); ctxMatch {
+		args[conceptArgContext] = ctx
+	}
+
+	gen := t.agent.newAspectModifierType(gAsp, args)
+	gen._linkGeneralization(t, o)
 }
 
 func (t *aspectModifierType) instantiate(target concept, source int, args map[int]any, modifArgs ...any) modifier {

@@ -59,18 +59,14 @@ func (t *simpleObjectType) debugArgs() map[string]any {
 }
 
 func (t *simpleObjectType) generalize(other concept) {
-	o, ok := other.(*simpleObjectType)
-	if !ok { // not a simple object type, elevate to abstract object type
-		o.abstractObjectType.generalize(other)
-		return
-	}
-
-	if !isNil(t.lowestCommonGeneralization(o)) {
+	o, ok := generalizeHeader[*simpleObjectType](t, other, t.abstractObjectType)
+	if !ok {
 		return
 	}
 
 	commonModifs := mapIntersection[modifierType](t.modifTypes(nil), o.modifTypes(nil))
 	if len(commonModifs) == 0 { // if there is nothing in common, do not generalize (todo: is this correct?)
+		o.abstractObjectType.generalize(other)
 		return
 	}
 

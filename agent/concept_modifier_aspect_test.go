@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"github.com/sapphire-ai-dev/sapphire-core/world"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
@@ -116,4 +117,38 @@ func TestAspectModifierShareSync(t *testing.T) {
 	sync := am.instShareParts()
 	assert.Len(t, sync, 1)
 	assert.Equal(t, partIdModifierTarget, sync[tc.id()])
+}
+
+func TestAspectModifierGeneralize(t *testing.T) {
+	agent := newEmptyWorldAgent()
+	amt1 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "red"), nil)
+	amt2 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "blue"), nil)
+	amtG := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color"), nil)
+	amt1.generalize(amt2)
+	assert.Equal(t, amtG, amt1.lowestCommonGeneralization(amt2))
+}
+
+func TestAspectModifierGroup(t *testing.T) {
+	agent := newEmptyWorldAgent()
+	amt1 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "red"), nil)
+	amt2 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "blue"), nil)
+	so := agent.newSimpleObject(123, nil)
+	tpos, _ := generateTime(agent, 0, 2)
+	am1 := amt1.instantiate(so, conceptSourceGeneralization, map[int]any{conceptArgTime: tpos[0]})
+	am2 := amt2.instantiate(so, conceptSourceGeneralization, map[int]any{conceptArgTime: tpos[1]})
+	amG := am1.buildGroup(map[int]concept{am2.id(): am2}).(modifier)
+	assert.NotNil(t, amG)
+	assert.Equal(t, amG._type(), amt1.lowestCommonGeneralization(amt2))
+}
+
+func TestAspectModifierVersionInterrupt(t *testing.T) {
+	agent := newEmptyWorldAgent()
+	amt1 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "red"), nil)
+	amt2 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "blue"), nil)
+	so := agent.newSimpleObject(123, nil)
+	_, tsos := generateTime(agent, 0, 7)
+	amt1.instantiate(so, conceptSourceGeneralization, map[int]any{conceptArgTime: tsos[1][6]})
+	assert.Len(t, so.modifiers(nil), 1)
+	amt2.instantiate(so, conceptSourceGeneralization, map[int]any{conceptArgTime: tsos[3][4]})
+	assert.Len(t, so.modifiers(nil), 4)
 }

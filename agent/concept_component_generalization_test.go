@@ -131,4 +131,8 @@ func TestConceptComponentGeneralizationDifferentLevel(t *testing.T) {
 	assert.Len(t, sot1.generalizations(), 1)
 	assert.Len(t, sot2.generalizations(), 1)
 	assert.Len(t, sotG.specifications(), 2)
+
+	assert.Equal(t, sot1, sot1.lowestCommonGeneralization(sot1))
+	assert.Equal(t, sotG, sot1.lowestCommonGeneralization(sotG))
+	assert.Equal(t, sotG, sotG.lowestCommonGeneralization(sot1))
 }

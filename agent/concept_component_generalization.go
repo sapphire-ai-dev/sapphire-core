@@ -61,6 +61,13 @@ func (g *conceptImplGeneralization) lowestCommonGeneralization(other concept) co
 	}
 
 	sGens, oGens, commonGens := self.generalizations(), other.generalizations(), map[int]concept{}
+	if sGen, seen := sGens[other.id()]; seen && sGen == other {
+		return other
+	}
+	if oGen, seen := oGens[self.id()]; seen && oGen == self {
+		return self
+	}
+
 	for _, sGen := range sGens {
 		if oGen, seen := oGens[sGen.id()]; seen && oGen == sGen {
 			commonGens[sGen.id()] = sGen
@@ -102,4 +109,21 @@ func (a *Agent) newConceptImplGeneralization(abs *abstractConcept) {
 		_generalizations: map[int]*memReference{},
 		_specifications:  map[int]*memReference{},
 	}
+}
+
+// helper function to unify the common header of generalize implementation
+func generalizeHeader[T concept](self, other concept, selfEscalate conceptCpntGeneralization) (T, bool) {
+	var t T
+	if isNil(other) || !isNil(self.lowestCommonGeneralization(other)) {
+		return t, false
+	}
+
+	ok := false
+	t, ok = other.(T)
+	if !ok {
+		selfEscalate.generalize(other)
+		return t, false
+	}
+
+	return t, true
 }

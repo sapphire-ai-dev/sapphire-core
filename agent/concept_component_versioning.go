@@ -72,6 +72,7 @@ func (v *conceptImplVersioning) updateSelfTime(newest concept) {
 
 	startOverlap := newS == nil || (selfS != nil && *selfS > *newS)
 	endOverlap := newE == nil || (selfE != nil && *selfE < *newE)
+	//fmt.Println(reflect.TypeOf(v.abs.self()), *selfS, *selfE, *newS, *newE)
 	if startOverlap && endOverlap { // full overlap
 		v.abs._self.replace(newest)
 		return
@@ -85,6 +86,7 @@ func (v *conceptImplVersioning) updateSelfTime(newest concept) {
 		lRep.replicaFinalize()
 		rRep.replicaFinalize()
 		newGroup := lRep.buildGroup(map[int]concept{rRep.id(): rRep})
+		newGroup.setTime(v.abs.time())
 		v.abs._self.replace(newGroup)
 		lRep.setNextVersion(newest)
 		newest.setPrevVersion(lRep)

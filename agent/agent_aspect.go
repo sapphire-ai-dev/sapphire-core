@@ -27,6 +27,27 @@ func (a *agentAspect) qualitative(name string) *aspectNode {
 	return a.root.find(aspectQualitativeDebugName, name)
 }
 
+func (a *agentAspect) lowestCommonAncestor(l, r *aspectNode) *aspectNode {
+	var lAncestors []*aspectNode
+	var rAncestors []*aspectNode
+	lA, rA := l, r
+	for lA != nil {
+		lAncestors = append(lAncestors, lA)
+		lA = lA.parent
+	}
+	for rA != nil {
+		rAncestors = append(rAncestors, rA)
+		rA = rA.parent
+	}
+
+	lP, rP := len(lAncestors)-1, len(rAncestors)-1
+	for lAncestors[lP] == rAncestors[rP] {
+		lP, rP = lP-1, rP-1
+	}
+
+	return lAncestors[lP+1]
+}
+
 func (a *Agent) newAgentAspect() {
 	a.aspect = &agentAspect{
 		agent: a,
