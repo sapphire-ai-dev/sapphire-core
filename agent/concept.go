@@ -13,6 +13,7 @@ type concept interface {
 	conceptCpntImaginary
 	conceptCpntGroup
 	conceptCpntVersioning
+	conceptCpntGeneralization
 }
 
 type abstractConcept struct {
@@ -26,6 +27,7 @@ type abstractConcept struct {
 	*conceptImplImaginary
 	*conceptImplGroup
 	*conceptImplVersioning
+	*conceptImplGeneralization
 }
 
 func (c *abstractConcept) abs() *abstractConcept {
@@ -66,6 +68,7 @@ func (a *Agent) newAbstractConcept(self concept, args map[int]any, out **abstrac
 	a.newConceptImplImaginary(*out)
 	a.newConceptImplGroup(*out)
 	a.newConceptImplVersioning(*out)
+	a.newConceptImplGeneralization(*out)
 
 	if ctx, seen := conceptArg[*contextObject](args, conceptArgContext); seen {
 		(*out).setCtx(ctx)

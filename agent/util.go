@@ -91,6 +91,16 @@ func ternaryEqual(a, b *bool) bool {
 	return *a == *b
 }
 
+func mapIntersection[T concept](l, r map[int]T) map[int]T {
+	result := map[int]T{}
+	for id, c := range l {
+		if _, seen := r[id]; seen {
+			result[id] = c
+		}
+	}
+	return result
+}
+
 func printErr(err error) {
 	if err != nil {
 		fmt.Println(err)

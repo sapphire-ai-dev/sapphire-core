@@ -9,7 +9,7 @@ type object interface {
 type objectType interface {
 	concept
 	source() int
-	modifTypes() map[int]modifierType
+	modifTypes(source *int) map[int]modifierType
 }
 
 type abstractObject struct {
@@ -66,38 +66,23 @@ func (a *Agent) newAbstractObject(self concept, args map[int]any, out **abstract
 type abstractObjectType struct {
 	*abstractConcept
 	_source     int
-	_modifTypes map[int]*memReference
+	_modifTypes map[int]map[int]*memReference
 }
 
 func (t *abstractObjectType) _match(o *abstractObjectType) bool {
 	// if we got the new objectType through observation, it must _match all observed modifiers of an existing objectType
 	//  in order to _match
-	if t.matchModifTypes(o, conceptSourceObservation) == false {
+	if t.matchModifTypes(o, &t._source) == false {
 		return false
 	}
 	return t.abstractConcept.match(o.abstractConcept)
 }
 
-func (t *abstractObjectType) matchModifTypes(o *abstractObjectType, source int) bool {
-	tModifTypes, oModifTypes := t.modifTypes(), o.modifTypes()
-	for tModifId, tModif := range tModifTypes {
-		if _, seen := tModif.sources()[source]; !seen {
-			continue
-		}
-
+func (t *abstractObjectType) matchModifTypes(o *abstractObjectType, source *int) bool {
+	tModifTypes, oModifTypes := t.modifTypes(source), o.modifTypes(source)
+	for tModifId := range tModifTypes {
 		// if we have a modifier type that came from the source, but they do not, do not _match
-		if oModif, seen := oModifTypes[tModifId]; !seen || tModif != oModif {
-			return false
-		}
-	}
-
-	for oModifId, oModif := range oModifTypes {
-		if _, seen := oModif.sources()[source]; !seen {
-			continue
-		}
-
-		// if they have a modifier type that came from the source, but we do not, do not _match
-		if tModif, seen := tModifTypes[oModifId]; !seen || tModif != tModif {
+		if _, seen := oModifTypes[tModifId]; !seen {
 			return false
 		}
 	}
@@ -115,14 +100,25 @@ func (t *abstractObjectType) source() int {
 	return t._source
 }
 
-func (t *abstractObjectType) modifTypes() map[int]modifierType {
-	return parseRefs[modifierType](t.agent, t._modifTypes)
+func (t *abstractObjectType) modifTypes(source *int) map[int]modifierType {
+	if source != nil {
+		return parseRefs[modifierType](t.agent, t._modifTypes[*source])
+	}
+
+	result := map[int]modifierType{}
+	for _, mts := range t._modifTypes {
+		for _, mt := range parseRefs[modifierType](t.agent, mts) {
+			result[mt.id()] = mt
+		}
+	}
+
+	return result
 }
 
 func (a *Agent) newAbstractObjectType(self concept, source int, args map[int]any, out **abstractObjectType) {
 	*out = &abstractObjectType{
 		_source:     source,
-		_modifTypes: map[int]*memReference{},
+		_modifTypes: map[int]map[int]*memReference{},
 	}
 	a.newAbstractConcept(self, args, &(*out).abstractConcept)
 }

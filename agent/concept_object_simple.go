@@ -58,33 +58,39 @@ func (t *simpleObjectType) debugArgs() map[string]any {
 	return args
 }
 
-//func (t *simpleObjectType) _generalize(other concept) concept {
-//	o, ok := other.(*simpleObjectType)
-//	if !ok {
-//		return nil
-//	}
-//
-//	// skip common generalizations (TODO MOVE THIS TO CALLER)
-//	tGens, oGens := t.generalizations(), o.generalizations()
-//	if tGens[o.id] != nil || oGens[t.id] != nil || len(mapIntersection[concept](tGens, oGens)) > 0 {
-//		return nil
-//	}
-//
-//	commonModifs := mapIntersection[modifierType](t._modifTypes(), o._modifTypes())
-//	if len(commonModifs) == 0 {
-//		return nil
-//	}
-//
-//	gen := t.agent.newSimpleObjectType(nil, conceptSourceGeneralization, commonModifs)
-//	gen._linkGeneralization(t, o)
-//	return gen
-//}
+func (t *simpleObjectType) generalize(other concept) {
+	o, ok := other.(*simpleObjectType)
+	if !ok { // not a simple object type, elevate to abstract object type
+		o.abstractObjectType.generalize(other)
+		return
+	}
+
+	if !isNil(t.lowestCommonGeneralization(o)) {
+		return
+	}
+
+	commonModifs := mapIntersection[modifierType](t.modifTypes(nil), o.modifTypes(nil))
+	if len(commonModifs) == 0 { // if there is nothing in common, do not generalize (todo: is this correct?)
+		return
+	}
+
+	args := map[int]any{}
+	if ctx, ctxMatch := t.agent.commonCtx(t, o); ctxMatch {
+		args[conceptArgContext] = ctx
+	}
+
+	gen := t.agent.newSimpleObjectType(conceptSourceGeneralization, commonModifs, args)
+	gen._linkGeneralization(t, o)
+}
 
 func (a *Agent) newSimpleObjectType(source int, modifTypes map[int]modifierType, args map[int]any) *simpleObjectType {
 	result := &simpleObjectType{}
 	a.newAbstractObjectType(result, source, args, &result.abstractObjectType)
+	if _, seen := result._modifTypes[source]; !seen {
+		result._modifTypes[source] = map[int]*memReference{}
+	}
 	for modifTypeId, modifType := range modifTypes {
-		result._modifTypes[modifTypeId] = modifType.createReference(result, false)
+		result._modifTypes[source][modifTypeId] = modifType.createReference(result, false)
 	}
 	return result.memorize().(*simpleObjectType)
 }
