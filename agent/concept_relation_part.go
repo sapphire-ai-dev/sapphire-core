@@ -25,36 +25,19 @@ type partRelationType struct {
 	partId int
 }
 
+func (t *partRelationType) instRejectsCondition(inst concept) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (t *partRelationType) instVerifiesCondition(inst concept) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (t *partRelationType) match(other concept) bool {
 	o, ok := other.(*partRelationType)
 	return ok && t.partId == o.partId && t.abstractRelationType.match(o.abstractRelationType)
-}
-
-func (t *partRelationType) verify(_ ...any) *bool {
-	if t.lockMap == nil {
-		return nil
-	}
-
-	lTarget, lSeen := t.lockMap[partIdRelationLTarget]
-	rTarget, rSeen := t.lockMap[partIdRelationRTarget]
-	if !lSeen || !rSeen {
-		return nil
-	}
-
-	lTarget.genPartRelations()
-	rTarget.genPartRelations()
-	insts, certainFalse := t.abstractRelationType.verifyInsts()
-	if certainFalse != nil {
-		return certainFalse
-	}
-
-	for _, inst := range insts {
-		if inst.lTarget() == lTarget && inst.rTarget() == rTarget && inst._type() == t {
-			return ternary(true)
-		}
-	}
-
-	return nil
 }
 
 func (a *Agent) newPartRelationType(partId int, args map[int]any) *partRelationType {

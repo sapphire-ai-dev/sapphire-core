@@ -76,8 +76,8 @@ func (t *atomicActionType) match(other concept) bool {
 		t.actionInterface == o.actionInterface
 }
 
-func (t *atomicActionType) instantiate(_ ...any) performableAction {
-	return t.agent.newAtomicAction(t, t.agent.self, nil)
+func (t *atomicActionType) instantiate(args map[int]any) performableAction {
+	return t.agent.newAtomicAction(t, t.agent.self, args)
 }
 
 func (t *atomicActionType) debugArgs() map[string]any {

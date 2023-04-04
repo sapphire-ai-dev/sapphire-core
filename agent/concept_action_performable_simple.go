@@ -96,7 +96,7 @@ func (t *simpleActionType) debugArgs() map[string]any {
 	return args
 }
 
-func (t *simpleActionType) instantiate(args ...any) performableAction {
+func (t *simpleActionType) instantiate(args map[int]any) performableAction {
 	return t.agent.newSimpleAction(t, t.agent.self, t.child().instantiate(args), nil)
 }
 

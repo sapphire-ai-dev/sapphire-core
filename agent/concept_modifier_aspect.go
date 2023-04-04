@@ -86,6 +86,16 @@ func (t *aspectModifierType) generalize(other concept) {
 	gen._linkGeneralization(t, o)
 }
 
+func (t *aspectModifierType) instRejectsCondition(inst concept) bool {
+	m, ok := inst.(*aspectModifier)
+	return ok && m._type() != t._self && m._type().(*aspectModifierType).aspect.parent == t.aspect.parent
+}
+
+func (t *aspectModifierType) instVerifiesCondition(inst concept) bool {
+	m, ok := inst.(*aspectModifier)
+	return ok && m._type() == t._self
+}
+
 func (t *aspectModifierType) instantiate(target concept, source int, args map[int]any, modifArgs ...any) modifier {
 	params := map[string]any{}
 	if len(modifArgs) > 0 {
@@ -93,24 +103,6 @@ func (t *aspectModifierType) instantiate(target concept, source int, args map[in
 	}
 
 	return t.agent.newAspectModifier(t, target, source, args, params).memorize().(*aspectModifier)
-}
-
-func (t *aspectModifierType) verify(_ ...any) *bool {
-	if target, seen := t.lockMap[partIdModifierTarget]; seen {
-		for _, m := range target.modifiers(nil) {
-			if m._type() == t._self {
-				return ternary(true)
-			}
-
-			if o, ok := m._type().(*aspectModifierType); ok {
-				if o.aspect.parent == t.aspect.parent {
-					return ternary(false)
-				}
-			}
-		}
-	}
-
-	return nil
 }
 
 func (a *Agent) newAspectModifierType(aspect *aspectNode, args map[int]any) *aspectModifierType {

@@ -65,7 +65,12 @@ func (t *intervalRelationType) match(other concept) bool {
 		t.intervalId == o.intervalId
 }
 
-func (t *intervalRelationType) verify(args ...any) *bool {
+func (t *intervalRelationType) instRejectsCondition(inst concept) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (t *intervalRelationType) instVerifiesCondition(inst concept) bool {
 	//TODO implement me
 	panic("implement me")
 }

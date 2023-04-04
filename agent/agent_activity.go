@@ -108,15 +108,13 @@ func (a *agentActivity) startAction() {
 		}
 	}
 
-	//if len(bestActionTypes) == 0 {
-	//	return
-	//}
 	var bestActionType performableActionType
-	if len(bestActionTypes) > 0 {
+	if len(bestActionTypes) > 0 && bestVal > 0 {
 		bestActionType = bestActionTypes[rand.Intn(len(bestActionTypes))]
 	}
+
 	if bestActionType != nil {
-		a.activeAction = bestActionType.instantiate()
+		a.activeAction = bestActionType.instantiate(map[int]any{conceptArgTime: a.agent.time.now})
 		if bestActionType.receiverType() != nil {
 			for _, candidateReceiver := range mindConcepts[object](a.agent.mind) {
 				if _, seen := candidateReceiver.types()[bestActionType.receiverType().id()]; seen {

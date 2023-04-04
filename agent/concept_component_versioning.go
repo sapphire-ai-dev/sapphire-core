@@ -64,15 +64,18 @@ func (v *conceptImplVersioning) updateSelfTime(newest concept) {
 	var newSO, newEO *timePointObject
 
 	if !isNil(newest.time()) {
-		newS = newest.time().start().clockTime
-		newE = newest.time().end().clockTime
+		if newest.time().start() != nil {
+			newS = newest.time().start().clockTime
+		}
+		if newest.time().end() != nil {
+			newE = newest.time().end().clockTime
+		}
 		newSO = newest.time().start()
 		newEO = newest.time().end()
 	}
 
 	startOverlap := newS == nil || (selfS != nil && *selfS > *newS)
 	endOverlap := newE == nil || (selfE != nil && *selfE < *newE)
-	//fmt.Println(reflect.TypeOf(v.abs.self()), *selfS, *selfE, *newS, *newE)
 	if startOverlap && endOverlap { // full overlap
 		v.abs._self.replace(newest)
 		return

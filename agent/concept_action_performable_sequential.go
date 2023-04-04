@@ -139,7 +139,7 @@ func (t *sequentialActionType) next() performableActionType {
 	return parseRef[performableActionType](t.agent, t._next)
 }
 
-func (t *sequentialActionType) instantiate(args ...any) performableAction {
+func (t *sequentialActionType) instantiate(args map[int]any) performableAction {
 	return t.agent.newSequentialAction(t, t.agent.self, t.first().instantiate(args), t.next().instantiate(args), nil)
 }
 

@@ -77,10 +77,11 @@ func (m *abstractModifier) buildGroup(others map[int]concept) concept {
 	return m.agent.newGroupModifier(members, nil)
 }
 
-func (m *abstractModifier) instShareParts() map[int]int {
-	return map[int]int{
-		m._target.c.id(): partIdModifierTarget,
-	}
+func (m *abstractModifier) instShareParts() (map[int]concept, map[int]int) {
+	parts, sync := map[int]concept{}, map[int]int{}
+	parts[partIdModifierTarget] = m.target()
+	sync[m._target.c.id()] = partIdModifierTarget
+	return parts, sync
 }
 
 func (m *abstractModifier) source() int {
@@ -110,7 +111,7 @@ func (a *Agent) newAbstractModifier(self modifier, t modifierType,
 }
 
 type abstractModifierType struct {
-	*abstractConcept
+	*abstractConditionType
 	_sources map[int]bool
 }
 
@@ -126,9 +127,22 @@ func (t *abstractModifierType) match(o *abstractModifierType) bool {
 	return t.abstractConcept.match(o.abstractConcept)
 }
 
-func (a *Agent) newAbstractModifierType(self concept, args map[int]any, out **abstractModifierType) {
-	*out = &abstractModifierType{
-		_sources: map[int]bool{},
+// do not check if type matches, as it is possible for modifiers of different types to verify or reject each other
+func (t *abstractModifierType) verifyCollectInsts(args map[int]any) map[int]concept {
+	insts := map[int]concept{}
+	target, seen := t.lockMap[partIdModifierTarget]
+	if !seen {
+		return insts
 	}
-	a.newAbstractConcept(self, args, &(*out).abstractConcept)
+
+	for _, m := range target.modifiers(args) {
+		insts[m.id()] = m
+	}
+
+	return insts
+}
+
+func (a *Agent) newAbstractModifierType(self concept, args map[int]any, out **abstractModifierType) {
+	*out = &abstractModifierType{_sources: map[int]bool{}}
+	a.newAbstractConditionType(self, args, &(*out).abstractConditionType)
 }

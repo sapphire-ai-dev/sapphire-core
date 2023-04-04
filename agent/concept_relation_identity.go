@@ -32,36 +32,19 @@ type identityRelationType struct {
 	*abstractRelationType
 }
 
-func (t identityRelationType) match(other concept) bool {
-	o, ok := other.(*identityRelationType)
-	return ok && t.abstractRelationType.match(o.abstractRelationType)
+func (t *identityRelationType) instRejectsCondition(inst concept) bool {
+	//TODO implement me
+	panic("implement me")
 }
 
-func (t identityRelationType) verify(_ ...any) *bool {
-	if t.lockMap == nil {
-		return nil
-	}
+func (t *identityRelationType) instVerifiesCondition(inst concept) bool {
+	//TODO implement me
+	panic("implement me")
+}
 
-	lTarget, lSeen := t.lockMap[partIdRelationLTarget]
-	rTarget, rSeen := t.lockMap[partIdRelationRTarget]
-	if !lSeen || !rSeen {
-		return nil
-	}
-
-	lTarget.genIdentityRelations()
-	rTarget.genIdentityRelations()
-	insts, certainFalse := t.abstractRelationType.verifyInsts()
-	if certainFalse != nil {
-		return certainFalse
-	}
-
-	for _, inst := range insts {
-		if inst.lTarget() == lTarget && inst.rTarget() == rTarget && inst._type() == t {
-			return ternary(true)
-		}
-	}
-
-	return nil
+func (t *identityRelationType) match(other concept) bool {
+	o, ok := other.(*identityRelationType)
+	return ok && t.abstractRelationType.match(o.abstractRelationType)
 }
 
 func (a *Agent) newIdentityRelationType(args map[int]any) *identityRelationType {

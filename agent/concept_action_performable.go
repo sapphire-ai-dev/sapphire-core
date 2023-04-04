@@ -1,6 +1,8 @@
 package agent
 
-import "math"
+import (
+	"math"
+)
 
 type performableAction interface {
 	action
@@ -17,7 +19,7 @@ type performableActionType interface {
 	actionType
 	value() float64
 	conditions() map[int]conditionType
-	instantiate(args ...any) performableAction
+	instantiate(args map[int]any) performableAction
 	receiverType() objectType
 	update(inst performableAction)
 }
@@ -55,15 +57,17 @@ func (a *abstractPerformableAction) complete() {
 	a.agent.activity.completedActions = append(a.agent.activity.completedActions, a._self.(performableAction))
 }
 
-func (a *abstractPerformableAction) instShareParts() map[int]int {
-	sync := map[int]int{}
+func (a *abstractPerformableAction) instShareParts() (map[int]concept, map[int]int) {
+	parts, sync := map[int]concept{partIdConceptSelf: a._self}, map[int]int{a._self.id(): partIdConceptSelf}
 	if a._performer != nil {
+		parts[partIdActionPerformer] = a.performer()
 		sync[a._performer.c.id()] = partIdActionPerformer
 	}
 	if a._receiver != nil {
+		parts[partIdActionReceiver] = a.receiver()
 		sync[a._receiver.c.id()] = partIdActionReceiver
 	}
-	return sync
+	return parts, sync
 }
 
 func (a *abstractPerformableAction) receiver() object {
@@ -99,7 +103,7 @@ func (a *abstractPerformableAction) snapshot(timing int, overrideMind map[int]co
 		condTruth: map[int]*bool{},
 	}
 
-	if overrideMind != nil {
+	if overrideMind == nil {
 		overrideMind = mindConcepts[concept](a.agent.mind)
 	}
 
@@ -107,13 +111,10 @@ func (a *abstractPerformableAction) snapshot(timing int, overrideMind map[int]co
 		a._snapshots[timing].mind[c.id()] = c.createReference(a._self, false)
 	}
 
-	instParts := map[int]concept{}
-	instParts[partIdActionPerformer] = a.performer()
-	instParts[partIdActionReceiver] = a.receiver()
-
+	instParts, _ := a.instShareParts()
 	for _, condType := range a.t.c.(performableActionType).conditions() {
 		condType.typeLockSync(a.t.c, instParts)
-		a._snapshots[timing].condTruth[condType.id()] = condType.verify()
+		a._snapshots[timing].condTruth[condType.id()] = condType.verify(map[int]any{conceptArgTime: a.agent.time.now})
 		condType.typeUnlockSync()
 	}
 }
@@ -124,10 +125,10 @@ func (a *abstractPerformableAction) getSnapshot(timing int) *snapshot {
 
 type abstractPerformableActionType struct {
 	*abstractActionType
+	_receiverType    *memReference
 	_conditions      map[int]*memReference
 	_causations      map[int]*memReference
 	causationRecords map[int]*causationRecord
-	_receiverType    *memReference
 }
 
 func (t *abstractPerformableActionType) conditions() map[int]conditionType {
@@ -153,7 +154,7 @@ func (t *abstractPerformableActionType) match(o *abstractPerformableActionType) 
 
 func (t *abstractPerformableActionType) update(inst performableAction) {
 	instPrevSnapshot, instPostSnapshot := inst.getSnapshot(snapshotTimingPrev), inst.getSnapshot(snapshotTimingPost)
-	actionInstPartIds := inst.instShareParts()
+	_, actionInstSync := inst.instShareParts()
 	log := instPrevSnapshot.condTruth
 
 	for _, modif := range filterConcepts[modifier](t.agent, instPrevSnapshot.mind) {
@@ -162,7 +163,8 @@ func (t *abstractPerformableActionType) update(inst performableAction) {
 			t._conditions[condType.id()] = condType.createReference(t._self, false)
 		}
 		log[condType.id()] = ternary(true)
-		t.typeUpdateSync(condType, actionInstPartIds, modif.instShareParts())
+		_, modifSync := modif.instShareParts()
+		t.typeUpdateSync(condType, actionInstSync, modifSync)
 	}
 
 	for _, rel := range filterConcepts[relation](t.agent, instPrevSnapshot.mind) {
@@ -171,11 +173,15 @@ func (t *abstractPerformableActionType) update(inst performableAction) {
 			t._conditions[condType.id()] = condType.createReference(t._self, false)
 		}
 		log[condType.id()] = ternary(true)
-		t.typeUpdateSync(condType, actionInstPartIds, rel.instShareParts())
+		_, relSync := rel.instShareParts()
+		t.typeUpdateSync(condType, actionInstSync, relSync)
 	}
 
 	for _, causation := range filterConcepts[change](t.agent, instPostSnapshot.mind) {
 		causationType := causation._type().(changeType)
+		if _, seen := t._causations[causationType.id()]; !seen {
+			t._causations[causationType.id()] = causationType.createReference(t._self, false)
+		}
 		t.newCausationRecord(causationType).addLog(log)
 	}
 }
@@ -199,7 +205,7 @@ func (t *abstractPerformableActionType) value() float64 {
 }
 
 func (t *abstractPerformableActionType) searchInstParts() map[int]concept {
-	syncMap := map[int]concept{}
+	syncMap := map[int]concept{partIdConceptSelf: t._self}
 	syncMap[partIdActionPerformer] = t.agent.self
 
 	if t._receiverType != nil {
@@ -223,7 +229,7 @@ func (t *abstractPerformableActionType) conditionTruth(syncMap map[int]concept) 
 	result := map[int]*bool{}
 	for conditionId, condition := range t.conditions() {
 		condition.typeLockSync(t._self, syncMap)
-		result[conditionId] = condition.verify()
+		result[conditionId] = condition.verify(map[int]any{conceptArgTime: t.agent.time.now})
 		condition.typeUnlockSync()
 	}
 

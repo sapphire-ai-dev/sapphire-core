@@ -29,7 +29,7 @@ package agent
 // afterwards, (relationType "x-pos") can simply unlock to reset its state, in order to lock
 // onto some other set of parts in future
 type conceptCpntSync interface {
-	instShareParts() map[int]int // conceptId -> partId
+	instShareParts() (map[int]concept, map[int]int) // partId -> concept, conceptId -> partId
 	typeUpdateSync(matchType concept, selfInstParts, matchInstParts map[int]int)
 	typeLockSync(sourceType concept, parts map[int]concept) // partId -> concept
 	typeUnlockSync()
@@ -43,30 +43,39 @@ type conceptImplSync struct {
 	lockMap map[int]concept
 }
 
-func (s *conceptImplSync) instShareParts() map[int]int {
-	return map[int]int{}
+func (s *conceptImplSync) instShareParts() (map[int]concept, map[int]int) {
+	return map[int]concept{}, map[int]int{}
 }
 
 func (s *conceptImplSync) typeUpdateSync(match concept, selfInstParts, matchInstParts map[int]int) {
+	affectedEntries := map[*syncEntry]bool{}
 	for partConceptId, selfInstPartId := range selfInstParts {
 		if matchInstPartId, seen := matchInstParts[partConceptId]; seen {
-			s.typeUpdateSyncHelper(match, selfInstPartId, matchInstPartId)
+			for entry := range s.typeUpdateSyncHelper(match, selfInstPartId, matchInstPartId) {
+				affectedEntries[entry] = true
+			}
 		}
+	}
+
+	for entry := range affectedEntries {
+		entry.count++
 	}
 }
 
-func (s *conceptImplSync) typeUpdateSyncHelper(match concept, selfInstPartId, matchInstPartId int) {
+func (s *conceptImplSync) typeUpdateSyncHelper(match concept, selfInstPartId, matchInstPartId int) map[*syncEntry]bool {
+	affectedEntries := map[*syncEntry]bool{}
 	sId, mId := s.abs.id(), match.id()
 	if _, seen := s.syncMap[mId]; !seen {
 		s.syncMap[mId] = s.newSyncEntry()
 	}
-	s.syncMap[mId].add(selfInstPartId, matchInstPartId)
+	affectedEntries[s.syncMap[mId].add(selfInstPartId, matchInstPartId)] = true
 
 	m := match.abs().conceptImplSync
 	if _, seen := m.syncMap[sId]; !seen {
 		m.syncMap[sId] = s.newSyncEntry()
 	}
-	m.syncMap[sId].add(matchInstPartId, selfInstPartId)
+	affectedEntries[m.syncMap[sId].add(matchInstPartId, selfInstPartId)] = true
+	return affectedEntries
 }
 
 func (s *conceptImplSync) typeLockSync(sourceType concept, sourceInstParts map[int]concept) {
@@ -94,20 +103,21 @@ type syncEntry struct {
 
 const syncTrustThreshold = 0.9
 
-func (e *syncEntry) add(selfInstPartId, matchInstPartId int) {
+func (e *syncEntry) add(selfInstPartId, matchInstPartId int) *syncEntry {
 	if _, seen := e.data[selfInstPartId]; !seen {
 		e.data[selfInstPartId] = map[int]int{}
 	}
 
 	e.data[selfInstPartId][matchInstPartId]++
-	e.count++
+	return e
 }
 
 func (e *syncEntry) lockMap(matchInstParts map[int]concept) map[int]concept {
 	result := map[int]concept{}
 	for partId, data := range e.data {
 		for matchId, count := range data {
-			if c, seen := matchInstParts[matchId]; seen && float64(count)/float64(e.count) > syncTrustThreshold {
+			c, seen := matchInstParts[matchId]
+			if seen && float64(count)/float64(e.count) > syncTrustThreshold {
 				result[partId] = c
 			}
 		}

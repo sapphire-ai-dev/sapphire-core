@@ -100,46 +100,54 @@ type auxiliaryRelationType struct {
 	*abstractRelationType
 	auxiliaryTypeId int
 	negative        bool
+	lType           *memReference
+	rType           *memReference
+}
+
+func (t *auxiliaryRelationType) instVerifiesCondition(inst concept) bool {
+	r, ok := inst.(*auxiliaryRelation)
+	lTarget, lOk := t.lockMap[partIdRelationLTarget]
+	if !ok || !lOk || r.lTarget() != lTarget || isNil(r._rTarget) {
+		return false
+	}
+
+	rTargetPA, rTargetIsPA := r.rTarget().(performableAction)
+	rT, tOk := r._type().(*auxiliaryRelationType)
+	return tOk && rTargetIsPA && rT.auxiliaryTypeId == t.auxiliaryTypeId &&
+		rT.negative == t.negative && rTargetPA._type() == t.rType.c
+}
+
+func (t *auxiliaryRelationType) instRejectsCondition(inst concept) bool {
+	r, ok := inst.(*auxiliaryRelation)
+	lTarget, lOk := t.lockMap[partIdRelationLTarget]
+	if !ok || !lOk || r.lTarget() != lTarget || isNil(r._rTarget) {
+		return false
+	}
+
+	rTargetPA, rTargetIsPA := r.rTarget().(performableAction)
+	rT, tOk := r._type().(*auxiliaryRelationType)
+	return tOk && rTargetIsPA && rT.auxiliaryTypeId == t.auxiliaryTypeId &&
+		rT.negative != t.negative && rTargetPA._type() == t.rType.c
 }
 
 func (t *auxiliaryRelationType) match(other concept) bool {
 	o, ok := other.(*auxiliaryRelationType)
 	return ok && t.abstractRelationType.match(o.abstractRelationType) && t.auxiliaryTypeId == o.auxiliaryTypeId &&
-		t.negative == o.negative
+		t.negative == o.negative && matchRefs(t.lType, o.lType) && matchRefs(t.rType, o.rType)
 }
 
-func (t *auxiliaryRelationType) verify(_ ...any) *bool {
-	if t.lockMap == nil {
-		return nil
-	}
-
-	lTarget, lSeen := t.lockMap[partIdRelationLTarget]
-	rTarget, rSeen := t.lockMap[partIdRelationRTarget]
-	if !lSeen || !rSeen {
-		return nil
-	}
-
-	lTarget.genIdentityRelations()
-	rTarget.genIdentityRelations()
-	insts, certainFalse := t.abstractRelationType.verifyInsts()
-	if certainFalse != nil {
-		return certainFalse
-	}
-
-	for _, inst := range insts {
-		if inst.lTarget() == lTarget && inst.rTarget() == rTarget && inst._type() == t {
-			return ternary(true)
-		}
-	}
-
-	return nil
-}
-
-func (a *Agent) newAuxiliaryRelationType(auxiliaryTypeId int, negative bool, args map[int]any) *auxiliaryRelationType {
+func (a *Agent) newAuxiliaryRelationType(auxiliaryTypeId int, negative bool,
+	lType objectType, rType performableActionType, args map[int]any) *auxiliaryRelationType {
 	result := &auxiliaryRelationType{
 		auxiliaryTypeId: auxiliaryTypeId,
 		negative:        negative,
 	}
 	a.newAbstractRelationType(result, args, &result.abstractRelationType)
+	if lType != nil {
+		result.lType = lType.createReference(result, true)
+	}
+	if rType != nil {
+		result.rType = rType.createReference(result, true)
+	}
 	return result.memorize().(*auxiliaryRelationType)
 }

@@ -98,6 +98,15 @@ func (r *abstractRelation) buildGroup(others map[int]concept) concept {
 	return r.agent.newGroupRelation(members, nil)
 }
 
+func (r *abstractRelation) instShareParts() (map[int]concept, map[int]int) {
+	parts, sync := map[int]concept{}, map[int]int{}
+	parts[partIdRelationLTarget] = r.lTarget()
+	sync[r.lTarget().id()] = partIdRelationLTarget
+	parts[partIdRelationRTarget] = r.rTarget()
+	sync[r.rTarget().id()] = partIdRelationRTarget
+	return parts, sync
+}
+
 func (r *abstractRelation) _type() relationType {
 	return parseRef[relationType](r.agent, r.t)
 }
@@ -138,58 +147,34 @@ func (a *Agent) newAbstractRelation(self concept, t relationType, lTarget, rTarg
 }
 
 type abstractRelationType struct {
-	*abstractConcept
+	*abstractConditionType
 }
 
 func (t *abstractRelationType) match(o *abstractRelationType) bool {
 	return t.abstractConcept.match(o.abstractConcept)
 }
 
-// scan for relations to potentially match the relationType t.self
-//
-//	if a relation exist with matching lTarget but different rTarget or matching rTarget but
-//	  different lTarget, return ternary false if t.self is exclusive
-//	if no such relation found, we are currently unsure, pass all possible candidates to caller
-//	  for further checks
-func (t *abstractRelationType) verifyInsts() (map[int]relation, *bool) {
-	insts := map[int]relation{}
-	if t.lockMap == nil {
-		return insts, nil
-	}
-
+// do not check if type or other target matches, as it is possible for relations of different types or other targets
+// to verify or reject each other
+func (t *abstractRelationType) verifyCollectInsts(args map[int]any) map[int]concept {
+	insts := map[int]concept{}
 	lTarget, lSeen := t.lockMap[partIdRelationLTarget]
+	if lSeen {
+		for _, r := range lTarget.relations(args) {
+			insts[r.id()] = r
+		}
+	}
 	rTarget, rSeen := t.lockMap[partIdRelationRTarget]
-	if !lSeen || !rSeen {
-		return insts, nil
-	}
-
-	for _, r := range lTarget.relations(nil) {
-		if r._type() == t._self {
+	if rSeen {
+		for _, r := range rTarget.relations(args) {
 			insts[r.id()] = r
-			// todo: this is not correct for all cases, the logic here is, if there is a relation
-			// between L and S of type T, then there isn't a relation between L and R of type T
-			// something like if adam's father is bob then adam's father cannot be charlie, this
-			// only applies if the relation type is exclusive
-			if r.rTarget() != rTarget {
-				return map[int]relation{}, ternary(false)
-			}
 		}
 	}
 
-	for _, r := range rTarget.relations(nil) {
-		if r._type() == t._self {
-			insts[r.id()] = r
-			// todo: same as above
-			if r.lTarget() != lTarget {
-				return map[int]relation{}, ternary(false)
-			}
-		}
-	}
-
-	return insts, nil
+	return insts
 }
 
 func (a *Agent) newAbstractRelationType(self concept, args map[int]any, out **abstractRelationType) {
 	*out = &abstractRelationType{}
-	a.newAbstractConcept(self, args, &(*out).abstractConcept)
+	a.newAbstractConditionType(self, args, &(*out).abstractConditionType)
 }

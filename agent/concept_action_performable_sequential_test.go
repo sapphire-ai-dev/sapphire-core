@@ -25,8 +25,8 @@ func TestSequentialActionTypeInstantiate(t *testing.T) {
 	aat1, aat2 := agent.newAtomicActionType(ai1, nil), agent.newAtomicActionType(ai2, nil)
 	sot := agent.newSimpleObjectType(conceptSourceObservation, map[int]modifierType{}, nil)
 	sat := agent.newSequentialActionType(sot, aat1, aat2, nil)
-	sa := sat.instantiate()
-	assert.Equal(t, sa, sat.instantiate())
+	sa := sat.instantiate(nil)
+	assert.Equal(t, sa, sat.instantiate(nil))
 	assert.Equal(t, sat, sa.part(partIdActionT))
 	assert.Equal(t, agent.self, sa.part(partIdActionPerformer))
 	aa1, aa2 := sa.part(partIdActionSequentialFirst).(action), sa.part(partIdActionSequentialNext).(action)
@@ -46,7 +46,7 @@ func TestSequentialActionDebug(t *testing.T) {
 	ai1, ai2 := tai1.instantiate(), tai2.instantiate()
 	aat1, aat2 := agent.newAtomicActionType(ai1, nil), agent.newAtomicActionType(ai2, nil)
 	sat := agent.newSequentialActionType(nil, aat1, aat2, nil)
-	sa := sat.instantiate()
+	sa := sat.instantiate(nil)
 	assert.Contains(t, sat.debug("", 2), toReflect[*atomicActionType]().Name())
 	assert.Contains(t, sa.debug("", 2), toReflect[*atomicAction]().Name())
 }
@@ -57,7 +57,7 @@ func TestSequentialActionLifecycle(t *testing.T) {
 	ai1, ai2 := tai1.instantiate(), tai2.instantiate()
 	aat1, aat2 := agent.newAtomicActionType(ai1, nil), agent.newAtomicActionType(ai2, nil)
 	sat := agent.newSequentialActionType(nil, aat1, aat2, nil)
-	sa := sat.instantiate().(*sequentialAction)
+	sa := sat.instantiate(nil).(*sequentialAction)
 	aa1, aa2 := sa.first(), sa.next()
 
 	assert.Equal(t, sa.state(), actionStateIdle)
@@ -110,7 +110,7 @@ func TestSequentialActionLifecycleThreeStep(t *testing.T) {
 	ai1, ai2, ai3 := tai1.instantiate(), tai2.instantiate(), tai3.instantiate()
 	aat1, aat2, aat3 := agent.newAtomicActionType(ai1, nil), agent.newAtomicActionType(ai2, nil), agent.newAtomicActionType(ai3, nil)
 	sat := agent.newSequentialActionType(nil, aat1, agent.newSequentialActionType(nil, aat2, aat3, nil), nil)
-	sa := sat.instantiate()
+	sa := sat.instantiate(nil)
 	tai1.ReadyResult = true
 	tai2.ReadyResult = true
 	tai3.ReadyResult = false

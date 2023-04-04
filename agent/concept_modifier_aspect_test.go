@@ -57,37 +57,27 @@ func TestAspectModifierTypeInstantiate(t *testing.T) {
 	assert.Contains(t, amStr, strconv.Itoa(val))
 }
 
-//func TestAspectModifierOverride(t *testing.T) {
-//	agent := newEmptyWorldAgent()
-//	info11, info12, info21, info22 := "info11", "info12", "info21", "info22"
-//	infoList11, infoList12, infoList21 := []string{info11, info21}, []string{info11, info22}, []string{info12, info21}
-//	amt11 := agent.newAspectModifierType(agent.aspect.find(infoList11...), nil)
-//	amt12 := agent.newAspectModifierType(agent.aspect.find(infoList12...), nil)
-//	amt21 := agent.newAspectModifierType(agent.aspect.find(infoList21...), nil)
-//	tc := agent.newTestConcept(1, nil)
-//
-//	assert.Len(t, tc.modifiers(nil), 0)
-//	am11 := amt11.instantiate(tc, conceptSourceObservation)
-//	assert.Len(t, tc.modifiers(nil), 1)
-//	assert.Equal(t, tc.modifiers(nil)[am11.id()], am11)
-//	am12 := amt12.instantiate(tc, conceptSourceObservation)
-//	assert.Len(t, tc.modifiers(nil), 1)
-//	assert.Equal(t, tc.modifiers(nil)[am12.id()], am12)
-//	am21 := amt21.instantiate(tc, conceptSourceObservation)
-//	assert.Len(t, tc.modifiers(nil), 2)
-//	assert.Equal(t, tc.modifiers(nil)[am12.id()], am12)
-//	assert.Equal(t, tc.modifiers(nil)[am21.id()], am21)
-//}
+func TestAspectModifierOverride(t *testing.T) {
+	agent := newEmptyWorldAgent()
+	info11, info12, info21, info22 := "info11", "info12", "info21", "info22"
+	infoList11, infoList12, infoList21 := []string{info11, info21}, []string{info11, info22}, []string{info12, info21}
+	amt11 := agent.newAspectModifierType(agent.aspect.find(infoList11...), nil)
+	amt12 := agent.newAspectModifierType(agent.aspect.find(infoList12...), nil)
+	amt21 := agent.newAspectModifierType(agent.aspect.find(infoList21...), nil)
+	tc := agent.newTestConcept(1, nil)
 
-//func TestAspectModifierOverrideErrorHandling(t *testing.T) {
-//	agent := newEmptyWorldAgent()
-//	info1, info2 := "info1", "info2"
-//	info := []string{info1, info2}
-//	amt := agent.newAspectModifierType(agent.aspect.find(info...), nil)
-//	tc1, tc2 := agent.newTestConcept(1, nil), agent.newTestConcept(2, nil)
-//	am1, am2 := amt.instantiate(tc1, conceptSourceObservation), amt.instantiate(tc2, conceptSourceObservation)
-//	assert.Nil(t, am1.override(am2))
-//}
+	assert.Len(t, tc.modifiers(nil), 0)
+	am11 := amt11.instantiate(tc, conceptSourceObservation, nil)
+	assert.Len(t, tc.modifiers(nil), 1)
+	assert.Equal(t, tc.modifiers(nil)[am11.id()], am11)
+	am12 := amt12.instantiate(tc, conceptSourceObservation, nil)
+	assert.Len(t, tc.modifiers(nil), 1)
+	assert.Equal(t, tc.modifiers(nil)[am12.id()], am12)
+	am21 := amt21.instantiate(tc, conceptSourceObservation, nil)
+	assert.Len(t, tc.modifiers(nil), 2)
+	assert.Equal(t, tc.modifiers(nil)[am12.id()], am12)
+	assert.Equal(t, tc.modifiers(nil)[am21.id()], am21)
+}
 
 func TestAspectModifierTypeVerify(t *testing.T) {
 	agent := newEmptyWorldAgent()
@@ -98,13 +88,13 @@ func TestAspectModifierTypeVerify(t *testing.T) {
 	amt21 := agent.newAspectModifierType(agent.aspect.find(infoList21...), nil)
 	tc := agent.newTestConcept(1, nil)
 	amt11.instantiate(tc, conceptSourceObservation, nil)
-	assert.Nil(t, amt11.verify())
+	assert.Nil(t, amt11.verify(nil))
 	amt11.lockMap[partIdModifierTarget] = tc
 	amt12.lockMap[partIdModifierTarget] = tc
 	amt21.lockMap[partIdModifierTarget] = tc
-	assert.True(t, *amt11.verify())
-	assert.False(t, *amt12.verify())
-	assert.Nil(t, amt21.verify())
+	assert.True(t, *amt11.verify(nil))
+	assert.False(t, *amt12.verify(nil))
+	assert.Nil(t, amt21.verify(nil))
 }
 
 func TestAspectModifierShareSync(t *testing.T) {
@@ -114,7 +104,7 @@ func TestAspectModifierShareSync(t *testing.T) {
 	amt := agent.newAspectModifierType(agent.aspect.find(info...), nil)
 	tc := agent.newTestConcept(1, nil)
 	am := amt.instantiate(tc, conceptSourceObservation, nil)
-	sync := am.instShareParts()
+	_, sync := am.instShareParts()
 	assert.Len(t, sync, 1)
 	assert.Equal(t, partIdModifierTarget, sync[tc.id()])
 }

@@ -62,7 +62,12 @@ func (t *comparativeRelationType) match(other concept) bool {
 		t.comparativeId == o.comparativeId
 }
 
-func (t *comparativeRelationType) verify(args ...any) *bool {
+func (t *comparativeRelationType) instRejectsCondition(inst concept) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (t *comparativeRelationType) instVerifiesCondition(inst concept) bool {
 	//TODO implement me
 	panic("implement me")
 }

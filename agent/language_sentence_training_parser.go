@@ -151,8 +151,8 @@ func (l *agentLanguage) dataParserAuxiliaryRelationType(_ *trainSntcData, data m
 		return nil
 	}
 
-	//TODO ADD NEGATIVE PARSE
-	return l.agent.newAuxiliaryRelationType(auxiliaryTypeId, false, nil)
+	//TODO ADD NEGATIVE AND TYPES PARSE
+	return l.agent.newAuxiliaryRelationType(auxiliaryTypeId, false, nil, nil, nil)
 }
 
 func (l *agentLanguage) dataParserAuxiliaryRelation(d *trainSntcData, data map[string]any) concept {

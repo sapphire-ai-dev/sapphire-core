@@ -8,11 +8,13 @@ import (
 func TestConceptCpntSyncInstShareParts(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	tc := agent.newTestConcept(1, nil)
-	assert.NotNil(t, tc.instShareParts())
+	_, sync := tc.instShareParts()
+	assert.NotNil(t, sync)
 
 	amt := agent.newAspectModifierType(agent.aspect.find([]string{"info1", "info2"}...), nil)
 	am := amt.instantiate(tc, conceptSourceObservation, nil)
-	assert.Equal(t, partIdModifierTarget, am.instShareParts()[tc.id()])
+	_, sync = am.instShareParts()
+	assert.Equal(t, partIdModifierTarget, sync[tc.id()])
 }
 
 func TestConceptCpntSyncTypeUpdateSync(t *testing.T) {
@@ -24,15 +26,19 @@ func TestConceptCpntSyncTypeUpdateSync(t *testing.T) {
 
 	so := agent.newSimpleObject(1, nil)
 	am := amt.instantiate(so, conceptSourceObservation, nil)
-	aa := aat.instantiate()
+	aa := aat.instantiate(nil)
 	aa.setReceiver(so)
-	amt.typeUpdateSync(aat, am.instShareParts(), aa.instShareParts())
+	_, amSync := am.instShareParts()
+	_, aaSync := aa.instShareParts()
+	amt.typeUpdateSync(aat, amSync, aaSync)
 	assert.Len(t, amt.syncMap, 1)
 	assert.Len(t, aat.syncMap, 1)
 	assert.Equal(t, 1, amt.syncMap[aat.id()].data[partIdModifierTarget][partIdActionReceiver])
 	assert.Equal(t, 1, aat.syncMap[amt.id()].data[partIdActionReceiver][partIdModifierTarget])
 
-	amt.typeUpdateSync(aat, am.instShareParts(), aa.instShareParts())
+	_, amSync = am.instShareParts()
+	_, aaSync = aa.instShareParts()
+	amt.typeUpdateSync(aat, amSync, aaSync)
 	assert.Len(t, amt.syncMap, 1)
 	assert.Len(t, aat.syncMap, 1)
 	assert.Equal(t, 2, amt.syncMap[aat.id()].data[partIdModifierTarget][partIdActionReceiver])
@@ -45,9 +51,11 @@ func TestConceptCpntSyncTypeLockSync(t *testing.T) {
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
 	so := agent.newSimpleObject(1, nil)
 	am := amt.instantiate(so, conceptSourceObservation, nil)
-	aa := aat.instantiate()
+	aa := aat.instantiate(nil)
 	aa.setReceiver(so)
-	amt.typeUpdateSync(aat, am.instShareParts(), aa.instShareParts())
+	_, amSync := am.instShareParts()
+	_, aaSync := aa.instShareParts()
+	amt.typeUpdateSync(aat, amSync, aaSync)
 	assert.Empty(t, amt.lockMap)
 	assert.Empty(t, aat.lockMap)
 
