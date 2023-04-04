@@ -4,6 +4,7 @@ type conceptCpntDecorator interface {
 	modifiers(args map[int]any) map[int]modifier
 	addModifier(m modifier)
 	relations(args map[int]any) map[int]relation
+	addRelation(r relation)
 	genPartRelations() map[int]relation
 	applyPartRelation(relation *partRelation)
 	genIdentityRelations() map[int]relation
@@ -40,25 +41,6 @@ func (d *conceptImplDecorator) addModifier(m modifier) {
 		return
 	}
 
-	//for _, oldModifierRef := range d._modifiers {
-	//	// old modifier is inconsistent with memory (already deleted), continue for now, clean up should happen soon
-	//	if oldModifierRef.c == nil {
-	//		continue
-	//	}
-	//
-	//	mergedModifier := m.override(oldModifierRef.c)
-	//	// self merged into existing - exit
-	//	if mergedModifier == oldModifierRef.c {
-	//		return
-	//	}
-	//
-	//	// existing merged into self - delete existing and keep merging
-	//	if mergedModifier != nil {
-	//		d.abs.agent.memory.remove(oldModifierRef.c)
-	//		m = mergedModifier.(modifier)
-	//	}
-	//}
-
 	d._modifiers[m.id()] = m.createReference(d.abs._self, false)
 }
 
@@ -69,6 +51,18 @@ func (d *conceptImplDecorator) relations(args map[int]any) map[int]relation {
 	}
 
 	return result
+}
+
+func (d *conceptImplDecorator) addRelation(r relation) {
+	if _, seen := d._relations[r.id()]; seen {
+		return
+	}
+
+	if r.lTarget() != d.abs._self && r.rTarget() != d.abs._self {
+		return
+	}
+
+	d._relations[r.id()] = r.createReference(d.abs._self, false)
 }
 
 // to be implemented per class

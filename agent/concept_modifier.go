@@ -59,7 +59,7 @@ func (m *abstractModifier) collectVersions() map[int]concept {
 	return result
 }
 
-func (m *abstractModifier) replicaFinalize() {
+func (m *abstractModifier) versioningReplicaFinalize() {
 	m.memorize()
 	m.target().addModifier(m._self.(modifier))
 }

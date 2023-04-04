@@ -22,7 +22,7 @@ func (m *aspectModifier) versionCollides(other concept) bool {
 }
 
 // also disjoints self from target to prevent infinite recursion on versioning component
-func (m *aspectModifier) replicate() concept {
+func (m *aspectModifier) versioningReplicate() concept {
 	delete(m.target().abs()._modifiers, m.cid)
 	result := &aspectModifier{params: m.params}
 	args := map[int]any{}

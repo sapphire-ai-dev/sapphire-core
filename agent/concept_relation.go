@@ -65,6 +65,39 @@ func (r *abstractRelation) part(partId int) concept {
 	return nil
 }
 
+func (r *abstractRelation) collectVersions() map[int]concept {
+	result := map[int]concept{}
+	for _, c := range r.lTarget().relations(map[int]any{
+		conceptArgContext: r.ctx(),
+		conceptArgTime:    r.time(),
+	}) {
+		if r._self.versionCollides(c) {
+			result[c.id()] = c
+		}
+	}
+
+	return result
+}
+
+func (r *abstractRelation) versioningReplicaFinalize() {
+	r.memorize()
+	r.lTarget().addRelation(r._self.(relation))
+	r.rTarget().addRelation(r._self.(relation))
+}
+
+func (r *abstractRelation) buildGroup(others map[int]concept) concept {
+	members := map[int]relation{r.cid: r._self.(relation)}
+	for _, other := range others {
+		if otherRelation, ok := other.(relation); !ok {
+			return nil
+		} else {
+			members[otherRelation.id()] = otherRelation
+		}
+	}
+
+	return r.agent.newGroupRelation(members, nil)
+}
+
 func (r *abstractRelation) _type() relationType {
 	return parseRef[relationType](r.agent, r.t)
 }

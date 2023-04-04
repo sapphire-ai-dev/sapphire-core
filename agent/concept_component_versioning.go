@@ -9,8 +9,8 @@ type conceptCpntVersioning interface {
 	updateVersions()
 	collectVersions() map[int]concept
 	updateSelfVersion(newest concept)
-	replicate() concept // replicate self without memorizing
-	replicaFinalize()   // after replicating, complete memorizing or interpreting here
+	versioningReplicate() concept // replicate self without memorizing
+	versioningReplicaFinalize()   // after replicating, complete memorizing or interpreting here
 }
 
 type conceptImplVersioning struct {
@@ -79,12 +79,12 @@ func (v *conceptImplVersioning) updateSelfTime(newest concept) {
 	}
 
 	if !startOverlap && !endOverlap { // full contain
-		lRep := v.abs.self().replicate()
-		rRep := v.abs.self().replicate()
+		lRep := v.abs.self().versioningReplicate()
+		rRep := v.abs.self().versioningReplicate()
 		lRep.setTime(v.abs.agent.time.temporalObjJoin(selfSO, newSO, true))
 		rRep.setTime(v.abs.agent.time.temporalObjJoin(newEO, selfEO, true))
-		lRep.replicaFinalize()
-		rRep.replicaFinalize()
+		lRep.versioningReplicaFinalize()
+		rRep.versioningReplicaFinalize()
 		newGroup := lRep.buildGroup(map[int]concept{rRep.id(): rRep})
 		newGroup.setTime(v.abs.time())
 		v.abs._self.replace(newGroup)
@@ -142,11 +142,11 @@ func (v *conceptImplVersioning) getSelfStartEndHelper() (*timePointObject, *time
 	return selfSO, selfEO, selfS, selfE
 }
 
-func (v *conceptImplVersioning) replicate() concept {
+func (v *conceptImplVersioning) versioningReplicate() concept {
 	return nil
 }
 
-func (v *conceptImplVersioning) replicaFinalize() {}
+func (v *conceptImplVersioning) versioningReplicaFinalize() {}
 
 func (a *Agent) newConceptImplVersioning(abs *abstractConcept) {
 	abs.conceptImplVersioning = &conceptImplVersioning{
