@@ -13,7 +13,7 @@ type agentLanguage struct {
 	wordPartDict    map[string]map[langPart]bool
 	wordConceptDict map[string]map[concept]bool
 	trainParser     *trainSntcParser
-	conceptParsers  map[string]func(d *trainSntcData, data map[string]any) concept
+	conceptParsers  map[string]func(d *trainSntcData, data map[string]any, args map[int]any) concept
 }
 
 func (l *agentLanguage) findLangNode(class reflect.Type) *langNode {
@@ -133,7 +133,7 @@ func (a *Agent) newAgentLanguage() {
 		wordConceptDict: map[string]map[concept]bool{},
 		wordPartDict:    map[string]map[langPart]bool{},
 		interpreters:    map[reflect.Type]func(concepts map[int]concept, args ...any) concept{},
-		conceptParsers:  map[string]func(d *trainSntcData, data map[string]any) concept{},
+		conceptParsers:  map[string]func(d *trainSntcData, data map[string]any, args map[int]any) concept{},
 	}
 
 	result.newCondGenerator()

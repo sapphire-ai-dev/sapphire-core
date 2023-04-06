@@ -79,6 +79,21 @@ func (r *abstractRelation) collectVersions() map[int]concept {
 	return result
 }
 
+func (r *abstractRelation) connectVersion(next concept) {
+	if !isNil(next) {
+		r._nextVersion = next.createReference(r._self, false)
+		next.abs()._prevVersion = r._self.createReference(next, false)
+		rct := r.agent.newRelationChangeType(r._type(), next.(relation)._type(), map[int]any{
+			conceptArgContext: r.ctx(),
+		})
+		rc := r.agent.newRelationChange(rct, r._self.(relation), next.(relation), map[int]any{
+			conceptArgContext: r.ctx(),
+			conceptArgTime:    r.time().end(),
+		})
+		r.agent.mind.add(rc)
+	}
+}
+
 func (r *abstractRelation) versioningReplicaFinalize() {
 	r.memorize()
 	r.lTarget().addRelation(r._self.(relation))
@@ -158,6 +173,7 @@ func (t *abstractRelationType) match(o *abstractRelationType) bool {
 // to verify or reject each other
 func (t *abstractRelationType) verifyCollectInsts(args map[int]any) map[int]concept {
 	insts := map[int]concept{}
+
 	lTarget, lSeen := t.lockMap[partIdRelationLTarget]
 	if lSeen {
 		for _, r := range lTarget.relations(args) {

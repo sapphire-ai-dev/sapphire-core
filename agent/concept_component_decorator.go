@@ -13,14 +13,17 @@ type conceptCpntDecorator interface {
 	setCtx(ctx *contextObject)
 	time() temporalObject
 	setTime(time temporalObject)
+	auxiliaries(args map[int]any) map[int]*auxiliaryRelation
+	addAuxiliary(r *auxiliaryRelation)
 }
 
 type conceptImplDecorator struct {
-	abs        *abstractConcept
-	_modifiers map[int]*memReference
-	_relations map[int]*memReference
-	_ctx       *memReference
-	_time      *memReference
+	abs          *abstractConcept
+	_modifiers   map[int]*memReference
+	_relations   map[int]*memReference
+	_auxiliaries map[int]*memReference
+	_ctx         *memReference
+	_time        *memReference
 }
 
 func (d *conceptImplDecorator) modifiers(args map[int]any) map[int]modifier {
@@ -101,6 +104,27 @@ func (d *conceptImplDecorator) setTime(time temporalObject) {
 	}
 }
 
+func (d *conceptImplDecorator) auxiliaries(args map[int]any) map[int]*auxiliaryRelation {
+	result := parseRefs[*auxiliaryRelation](d.abs.agent, d._auxiliaries)
+	if temporal, seen := conceptArg[temporalObject](args, conceptArgTime); seen {
+		result = filterOverlapTemporal[*auxiliaryRelation](d.abs.agent.time, result, temporal)
+	}
+
+	return result
+}
+
+func (d *conceptImplDecorator) addAuxiliary(r *auxiliaryRelation) {
+	if _, seen := d._auxiliaries[r.id()]; seen {
+		return
+	}
+
+	if r._actionPerformer.c != d.abs._self && r._actionReceiver.c != d.abs._self {
+		return
+	}
+
+	d._auxiliaries[r.id()] = r.createReference(d.abs._self, false)
+}
+
 func (d *conceptImplDecorator) clean(r *memReference) {
 	if _, seen := d._modifiers[r.c.id()]; seen {
 		delete(d._modifiers, r.c.id())
@@ -128,8 +152,9 @@ func injectConceptArg(args map[int]any, key int, val concept) (map[int]any, bool
 
 func (a *Agent) newConceptImplDecorator(abs *abstractConcept) {
 	abs.conceptImplDecorator = &conceptImplDecorator{
-		abs:        abs,
-		_modifiers: map[int]*memReference{},
-		_relations: map[int]*memReference{},
+		abs:          abs,
+		_modifiers:   map[int]*memReference{},
+		_relations:   map[int]*memReference{},
+		_auxiliaries: map[int]*memReference{},
 	}
 }

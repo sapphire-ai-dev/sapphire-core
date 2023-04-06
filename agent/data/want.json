@@ -5,64 +5,120 @@
       "class": "AspectModifierType",
       "labels": ["color", "blue"]
     }, {
-      "name": "yellow",
-      "class": "AspectModifierType",
-      "labels": ["color", "yellow"]
-    },
-    {
       "name": "agent",
       "class": "SimpleObjectType",
       "modifierTypes": ["blue"]
-    }, {
-      "name": "banana",
-      "class": "SimpleObjectType",
-      "modifierTypes": ["yellow"]
     },
     {
-      "name": "eat",
+      "name": "agent-self",
+      "class": "SelfObject",
+      "types": ["agent"],
+      "attach": "self"
+    }, {
+      "name": "agent-master",
+      "class": "SimpleObject",
+      "worldId": 123,
+      "types": ["agent"]
+    },
+    {
+      "name": "create-context",
+      "class": "CreateContextActionType"
+    }, {
+      "name": "create-context-inst",
+      "class": "CreateContextAction",
+      "type": "create-context",
+      "performer": "agent-master",
+      "contextId": 1
+    },
+    {
+      "name": "context",
+      "class": "ContextObjectType"
+    }, {
+      "name": "context-inst",
+      "class": "ContextObject",
+      "creation": "create-context-inst",
+      "type": "context"
+    },
+    {
+      "name": "jump",
       "class": "AtomicActionType",
       "interfaceId": 4
     }, {
-      "name": "banana-inst-0",
-      "class": "SimpleObject",
-      "worldId": 234,
-      "types": ["banana"]
-    },
-    {
-      "name": "eat-inst-hypothetical",
+      "name": "jump-inst-hypothetical",
       "class": "AtomicAction",
-      "type": "eat",
-      "receiver": "banana-inst-0"
-    }, {
-      "name": "one",
-      "class": "Number",
-      "value": 1
+      "type": "jump",
+      "ctx": "context-inst",
+      "performer": "agent-self"
     },
     {
       "name": "want",
       "class": "AuxiliaryRelationType",
+      "lType": "agent",
+      "rType": "jump",
+      "negative": false,
       "type": "want"
     }, {
       "name": "want-change",
       "class": "ActionStateChangeType",
-      "target": "eat"
-    },
-    {
+      "target": "jump"
+    }, {
       "name": "want-change-inst-0",
       "class": "ActionStateChange",
       "type": "want-change",
-      "target": "eat-inst-hypothetical",
+      "target": "jump-inst-hypothetical",
       "value": 10.0
-    },
-    {
+    }, {
       "name": "want-inst-0",
       "class": "AuxiliaryRelation",
       "type": "want",
-      "lTarget": "agent-inst-0",
-      "rTarget": "eat-inst-hypothetical",
-      "wantChange": "want-change-inst-0"
+      "lTarget": "agent-master",
+      "rTarget": "jump-inst-hypothetical",
+      "wantChange": "want-change-inst-0",
+      "time": "now"
     }
   ],
   "sentences": [
+    {
+      "body": "i want you to jump",
+      "speaker": "agent-master",
+      "listener": "agent-self",
+      "root": {
+        "word": "",
+        "concept": "want-inst-0",
+        "children": [
+          {
+            "word": "i",
+            "concept": "agent-master",
+            "isPronoun": true,
+            "children": []
+          },
+          {
+            "word": "want",
+            "concept": "want",
+            "children": []
+          },
+          {
+            "word": "",
+            "concept": "jump-inst-hypothetical",
+            "children": [
+              {
+                "word": "you",
+                "concept": "agent-self",
+                "isPronoun": true,
+                "children": []
+              }, {
+                "word": "to",
+                "concept": "context-inst",
+                "children": []
+              }, {
+                "word": "jump",
+                "concept": "jump",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    }
   ]
 }

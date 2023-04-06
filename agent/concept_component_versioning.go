@@ -3,9 +3,8 @@ package agent
 type conceptCpntVersioning interface {
 	versionCollides(other concept) bool
 	prevVersion() concept
-	setPrevVersion(prev concept)
 	nextVersion() concept
-	setNextVersion(next concept)
+	connectVersion(next concept)
 	updateVersions()
 	collectVersions() map[int]concept
 	updateSelfVersion(newest concept)
@@ -27,19 +26,14 @@ func (v *conceptImplVersioning) prevVersion() concept {
 	return parseRef[concept](v.abs.agent, v._prevVersion)
 }
 
-func (v *conceptImplVersioning) setPrevVersion(prev concept) {
-	if !isNil(prev) {
-		v._prevVersion = prev.createReference(v.abs._self, false)
-	}
-}
-
 func (v *conceptImplVersioning) nextVersion() concept {
 	return parseRef[concept](v.abs.agent, v._nextVersion)
 }
 
-func (v *conceptImplVersioning) setNextVersion(next concept) {
+func (v *conceptImplVersioning) connectVersion(next concept) {
 	if !isNil(next) {
 		v._nextVersion = next.createReference(v.abs._self, false)
+		next.abs()._prevVersion = v.abs._self.createReference(next, false)
 	}
 }
 
@@ -91,22 +85,20 @@ func (v *conceptImplVersioning) updateSelfTime(newest concept) {
 		newGroup := lRep.buildGroup(map[int]concept{rRep.id(): rRep})
 		newGroup.setTime(v.abs.time())
 		v.abs._self.replace(newGroup)
-		lRep.setNextVersion(newest)
-		newest.setPrevVersion(lRep)
-		newest.setNextVersion(rRep)
-		rRep.setPrevVersion(newest)
+		lRep.connectVersion(newest)
+		newest.connectVersion(rRep)
 		return
 	}
 
 	if startOverlap && (selfS == nil || *selfS < *newE) {
 		v.abs.setTime(v.abs.agent.time.temporalObjJoin(newEO, selfEO, true))
-		v.abs.setPrevVersion(newest)
+		newest.connectVersion(v.abs._self)
 		return
 	}
 
 	if endOverlap && (selfE == nil || *selfE > *newS) {
 		v.abs.setTime(v.abs.agent.time.temporalObjJoin(selfSO, newSO, true))
-		v.abs.setNextVersion(newest)
+		v.abs._self.connectVersion(newest)
 		return
 	}
 }

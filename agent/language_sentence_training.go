@@ -44,9 +44,11 @@ type trainSntcNode struct {
 func (l *agentLanguage) collectParts(root concept) (map[int]int, map[int]int) {
 	forward, backward := map[int]int{}, map[int]int{} // part ID -> concept ID, concept ID -> part ID
 	for partId := range l.agent.record.classes[reflect.TypeOf(root)].parts {
-		recConceptId := root.part(partId).id()
-		forward[partId] = recConceptId
-		backward[recConceptId] = partId
+		if !isNil(root.part(partId)) {
+			recConceptId := root.part(partId).id()
+			forward[partId] = recConceptId
+			backward[recConceptId] = partId
+		}
 	}
 
 	return forward, backward
@@ -184,11 +186,12 @@ func (l *agentLanguage) newTrainSntcParser() {
 }
 
 type trainSntcData struct {
-	l                *agentLanguage
-	Concepts         []map[string]any     `json:"concepts"`
-	Sentences        []*TrainSntcRootData `json:"sentences"`
-	namedConcepts    map[string]concept
-	actionInterfaces map[int]*world.ActionInterface
+	l                    *agentLanguage
+	Concepts             []map[string]any     `json:"concepts"`
+	Sentences            []*TrainSntcRootData `json:"sentences"`
+	namedConcepts        map[string]concept
+	actionInterfaces     map[int]*world.ActionInterface
+	testActionInterfaces map[int]*TestActionInterface
 }
 
 func (d *trainSntcData) parse() ([]*trainSntc, map[int]concept) {
@@ -210,6 +213,18 @@ func (d *trainSntcData) parse() ([]*trainSntc, map[int]concept) {
 	return sentences, concepts
 }
 
+func (d *trainSntcData) parseConceptArgs(data map[string]any) map[int]any {
+	result := map[int]any{}
+	if ctx, ctxOk := mapConcept[*contextObject](d, data, "ctx"); ctxOk {
+		result[conceptArgContext] = ctx
+	}
+	if temporal, temporalOk := mapConcept[temporalObject](d, data, "time"); temporalOk {
+		result[conceptArgTime] = temporal
+	}
+
+	return result
+}
+
 func (d *trainSntcData) parseSingleConcept(data map[string]any) {
 	name, nameOk := mapVal[string](data, "name")
 	class, classOk := mapVal[string](data, "class")
@@ -217,8 +232,9 @@ func (d *trainSntcData) parseSingleConcept(data map[string]any) {
 		return
 	}
 
+	args := d.parseConceptArgs(data)
 	if parser, parserSeen := d.l.conceptParsers[class]; parserSeen {
-		if c := parser(d, data); c != nil {
+		if c := parser(d, data, args); c != nil {
 			d.namedConcepts[name] = c
 		}
 	}
@@ -255,11 +271,13 @@ func (d *trainSntcData) parseSingleNode(n *TrainSntcNodeData) *trainSntcNode {
 
 func (d *trainSntcData) newActionInterface(i int) *world.ActionInterface {
 	if d.actionInterfaces == nil {
+		d.testActionInterfaces = map[int]*TestActionInterface{}
 		d.actionInterfaces = map[int]*world.ActionInterface{}
 	}
 
 	if _, seen := d.actionInterfaces[i]; !seen {
-		d.actionInterfaces[i] = newTestActionInterface().instantiate()
+		d.testActionInterfaces[i] = newTestActionInterface()
+		d.actionInterfaces[i] = d.testActionInterfaces[i].instantiate()
 	}
 
 	return d.actionInterfaces[i]

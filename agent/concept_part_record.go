@@ -130,6 +130,8 @@ const (
 	partIdRelationT
 	partIdRelationLTarget
 	partIdRelationRTarget
+	partIdRelationAuxiliaryPerformer
+	partIdRelationAuxiliaryReceiver
 )
 
 func (r *partRecord) initClasses() {
@@ -176,6 +178,9 @@ func (r *partRecord) initClasses() {
 	r.initClassesSingle(toReflect[*simpleObject](), toReflect[object](), map[int]reflect.Type{})
 
 	r.initClassesSingle(toReflect[*selfObject](), toReflect[object](), map[int]reflect.Type{})
+
+	r.initClassesSingle(toReflect[*contextObjectType](), toReflect[objectType](), map[int]reflect.Type{})
+	r.initClassesSingle(toReflect[*contextObject](), toReflect[object](), map[int]reflect.Type{})
 
 	r.initClassesSingle(toReflect[relationType](), toReflect[concept](), map[int]reflect.Type{})
 	r.initClassesSingle(toReflect[relation](), toReflect[concept](), map[int]reflect.Type{

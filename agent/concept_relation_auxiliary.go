@@ -2,7 +2,9 @@ package agent
 
 type auxiliaryRelation struct {
 	*abstractRelation
-	_wantChange *memReference // weird naming... this is the change that carries value for a [want] auxiliaryRelation
+	_wantChange      *memReference // weird naming... this is the change that carries value for a [want] auxiliaryRelation
+	_actionPerformer *memReference
+	_actionReceiver  *memReference
 }
 
 func (r *auxiliaryRelation) match(other concept) bool {
@@ -65,6 +67,19 @@ func (r *auxiliaryRelation) interpret() {
 	}
 }
 
+func (r *auxiliaryRelation) instShareParts() (map[int]concept, map[int]int) {
+	parts, sync := r.abstractRelation.instShareParts()
+	if r._actionPerformer != nil {
+		parts[partIdRelationAuxiliaryPerformer] = r._actionPerformer.c
+		sync[r._actionPerformer.c.id()] = partIdRelationAuxiliaryPerformer
+	}
+	if r._actionReceiver != nil {
+		parts[partIdRelationAuxiliaryReceiver] = r._actionReceiver.c
+		sync[r._actionReceiver.c.id()] = partIdRelationAuxiliaryReceiver
+	}
+	return parts, sync
+}
+
 func (a *Agent) newAuxiliaryRelation(t *auxiliaryRelationType, lTarget, rTarget concept,
 	args map[int]any) *auxiliaryRelation {
 	_, lTargetIsObject := lTarget.(object)
@@ -82,6 +97,14 @@ func (a *Agent) newAuxiliaryRelation(t *auxiliaryRelationType, lTarget, rTarget 
 	result = result.memorize().(*auxiliaryRelation)
 	lTarget.addRelation(result)
 	rTarget.addRelation(result)
+	if rTarget.(performableAction).performer() != nil {
+		result._actionPerformer = rTarget.(performableAction).performer().createReference(result, true)
+		rTarget.(performableAction).performer().addAuxiliary(result)
+	}
+	if rTarget.(performableAction).receiver() != nil {
+		result._actionReceiver = rTarget.(performableAction).receiver().createReference(result, true)
+		rTarget.(performableAction).receiver().addAuxiliary(result)
+	}
 	return result
 }
 
@@ -104,30 +127,70 @@ type auxiliaryRelationType struct {
 	rType           *memReference
 }
 
-func (t *auxiliaryRelationType) instVerifiesCondition(inst concept) bool {
-	r, ok := inst.(*auxiliaryRelation)
-	lTarget, lOk := t.lockMap[partIdRelationLTarget]
-	if !ok || !lOk || r.lTarget() != lTarget || isNil(r._rTarget) {
+func (t *auxiliaryRelationType) verifyCollectInsts(args map[int]any) map[int]concept {
+	insts := t.abstractRelationType.verifyCollectInsts(args)
+	rPerformer, pSeen := t.lockMap[partIdRelationAuxiliaryPerformer]
+	if pSeen {
+		for _, r := range rPerformer.auxiliaries(args) {
+			insts[r.id()] = r
+		}
+	}
+	rReceiver, rSeen := t.lockMap[partIdRelationAuxiliaryReceiver]
+	if rSeen {
+		for _, r := range rReceiver.relations(args) {
+			insts[r.id()] = r
+		}
+	}
+
+	return insts
+}
+
+func (t *auxiliaryRelationType) instMatch(r *auxiliaryRelation) bool {
+	if isNil(r._lTarget) || isNil(r._rTarget) {
 		return false
 	}
 
+	selfLTarget, lOk := t.lockMap[partIdRelationLTarget]
+	selfRPerformer, rpOk := t.lockMap[partIdRelationAuxiliaryPerformer]
+	selfRReceiver, rrOk := t.lockMap[partIdRelationAuxiliaryReceiver]
+	if (lOk && r.lTarget() != selfLTarget) ||
+		(rpOk && r.rTarget().(performableAction).performer() != selfRPerformer) ||
+		(rrOk && r.rTarget().(performableAction).receiver() != selfRReceiver) {
+		return false
+	}
+
+	if !lOk { // if self did not lock onto a left target, the instance must have the same type
+		if _, seen := r.lTarget().(object).types()[t.lType.c.id()]; !seen {
+			return false
+		}
+	}
+
 	rTargetPA, rTargetIsPA := r.rTarget().(performableAction)
+	if !rTargetIsPA || rTargetPA._type() != t.rType.c {
+		return false
+	}
+
+	return true
+}
+
+func (t *auxiliaryRelationType) instVerifiesCondition(inst concept) bool {
+	r, ok := inst.(*auxiliaryRelation)
+	if !ok || !t.instMatch(r) {
+		return false
+	}
+
 	rT, tOk := r._type().(*auxiliaryRelationType)
-	return tOk && rTargetIsPA && rT.auxiliaryTypeId == t.auxiliaryTypeId &&
-		rT.negative == t.negative && rTargetPA._type() == t.rType.c
+	return tOk && rT.auxiliaryTypeId == t.auxiliaryTypeId && rT.negative == t.negative
 }
 
 func (t *auxiliaryRelationType) instRejectsCondition(inst concept) bool {
 	r, ok := inst.(*auxiliaryRelation)
-	lTarget, lOk := t.lockMap[partIdRelationLTarget]
-	if !ok || !lOk || r.lTarget() != lTarget || isNil(r._rTarget) {
+	if !ok || !t.instMatch(r) {
 		return false
 	}
 
-	rTargetPA, rTargetIsPA := r.rTarget().(performableAction)
 	rT, tOk := r._type().(*auxiliaryRelationType)
-	return tOk && rTargetIsPA && rT.auxiliaryTypeId == t.auxiliaryTypeId &&
-		rT.negative != t.negative && rTargetPA._type() == t.rType.c
+	return tOk && rT.auxiliaryTypeId == t.auxiliaryTypeId && rT.negative != t.negative
 }
 
 func (t *auxiliaryRelationType) match(other concept) bool {

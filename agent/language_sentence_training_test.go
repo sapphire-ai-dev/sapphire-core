@@ -85,3 +85,30 @@ func TestParsePronoun(t *testing.T) {
 		assert.Equal(t, strings.Join(sn.str(), " "), sentence.body)
 	}
 }
+
+func TestParseAuxiliary(t *testing.T) {
+	agent := newEmptyWorldAgent()
+
+	// agent gets fed the grammatical structure of "I want you to jump" (speaker: master, listener: self)
+	trainData, sentences, _ := agent.language.trainParser.parse("data/want.json")
+
+	// agent builds said grammatical structure from given sentence
+	for _, sentence := range sentences {
+		sentence.rootNode.build()
+	}
+
+	// agent gets fed the same sentence, now without the grammatical structure
+	for _, sentence := range sentences {
+		ctx := agent.language.newSntcCtx(trainData.namedConcepts["agent-master"].(object), agent.self)
+		sn := agent.language.fit(strings.Split(sentence.body, " "), ctx)
+		assert.Equal(t, strings.Join(sn.str(), " "), sentence.body)
+	}
+
+	// prepares the jump action for the agent
+	trainData.testActionInterfaces[4].ReadyResult = true
+	assert.Equal(t, trainData.testActionInterfaces[4].StepCount, 0)
+
+	// advances agent by 1 time step
+	agent.cycle()
+	assert.Equal(t, trainData.testActionInterfaces[4].StepCount, 1) // agent performed requested action!
+}

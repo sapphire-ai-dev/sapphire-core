@@ -40,7 +40,7 @@ func (c *participantLangCondition) interpret(root, _ concept, truth *bool, ctx *
 		match = ctx.dst
 	}
 
-	if match != nil {
+	if !isNil(match) {
 		root.replace(match)
 	} else {
 		panic("should not get here: condition was evaluated as true but match does not exist")
