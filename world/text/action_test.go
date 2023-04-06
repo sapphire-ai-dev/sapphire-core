@@ -205,3 +205,63 @@ func TestPressKey(t *testing.T) {
 	assert.Equal(t, len(f.lines[0].characters), 1)
 	assert.Equal(t, f.lines[0].characters[0].shape, pressKeyCmds[PressKeyCmd0])
 }
+
+func TestSpecialKey(t *testing.T) {
+	w := newTextWorld()
+	actorId, _ := w.NewActor()
+
+	root := w.rootDirectory
+	f := root.newFile("fName")
+
+	cErr := w.specialKeyWrap(actorId, PressKeyCmdLeft)
+	w.actors[actorId].currItemId = -1
+	assert.False(t, cErr.Ready())
+	cErr.Step()
+
+	w.actors[actorId].currItemId = f.id()
+
+	assert.Nil(t, w.specialKeyWrap(actorId, PressKeyCmd0))
+	ciL := w.specialKeyWrap(actorId, PressKeyCmdLeft)
+	ciR := w.specialKeyWrap(actorId, PressKeyCmdRight)
+	ciB := w.specialKeyWrap(actorId, PressKeyCmdBackspace)
+	ciE := w.specialKeyWrap(actorId, PressKeyCmdEnter)
+	ciU := w.specialKeyWrap(actorId, PressKeyCmdUp)
+	ciD := w.specialKeyWrap(actorId, PressKeyCmdDown)
+
+	assert.False(t, ciB.Ready())
+	assert.False(t, ciL.Ready())
+	assert.False(t, ciU.Ready())
+
+	// create three chars in file
+	c0 := w.pressKeyWrap(actorId, PressKeyCmd0)
+	c1 := w.pressKeyWrap(actorId, PressKeyCmd1)
+	c2 := w.pressKeyWrap(actorId, PressKeyCmd2)
+	c0.Step()
+	c1.Step()
+	c2.Step()
+
+	assert.Equal(t, w.actors[actorId].cursorChar, 3)
+	assert.False(t, ciR.Ready())
+
+	ciL.Step()
+	assert.Equal(t, w.actors[actorId].cursorChar, 2)
+	ciR.Step()
+	assert.Equal(t, w.actors[actorId].cursorChar, 3)
+
+	ciB.Step()
+	assert.Equal(t, w.actors[actorId].cursorChar, 2)
+	assert.Equal(t, len(f.lines[0].characters), 2)
+
+	ciL.Step()
+	ciE.Step()
+	assert.Equal(t, w.actors[actorId].cursorChar, 0)
+	assert.Equal(t, w.actors[actorId].cursorLine, 1)
+
+	ciU.Step()
+	assert.Equal(t, w.actors[actorId].cursorLine, 0)
+
+	ciD.Step()
+	assert.Equal(t, w.actors[actorId].cursorLine, 1)
+	assert.False(t, ciD.Ready())
+	ciD.Step()
+}

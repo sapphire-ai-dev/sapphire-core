@@ -182,10 +182,12 @@ func TestLineConstructor(t *testing.T) {
 	root := w.rootDirectory
 	f := root.newFile("")
 	l := f.newLine()
+	f.appendLine(l)
 	assert.Equal(t, f, l.parent)
 	assert.Empty(t, l.characters)
 
 	l2 := f.newLine()
+	f.appendLine(l2)
 	assert.NotEqual(t, l.id, l2.id)
 }
 
@@ -222,6 +224,8 @@ func TestLineImage(t *testing.T) {
 	l1 := f.lines[0]
 	l2 := f.newLine()
 	l3 := f.newLine()
+	f.appendLine(l2)
+	f.appendLine(l3)
 	w.actors[actorId].currItemId = f.id()
 	imgs := w.Look(actorId)
 	imgMap := map[int]*world.Image{}
@@ -260,6 +264,7 @@ func TestCharacterConstructor(t *testing.T) {
 	root := w.rootDirectory
 	f := root.newFile("")
 	l := f.newLine()
+	f.appendLine(l)
 	shape := pressKeyCmds[PressKeyCmd0]
 	c := l.newCharacter(shape)
 	assert.Equal(t, l, c.parent)
