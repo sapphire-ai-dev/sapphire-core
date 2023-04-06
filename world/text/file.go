@@ -118,6 +118,7 @@ func (d *directory) newDirectory(name string) *directory {
 
 	d.w.newAbstractItem(result, d, name, &result.abstractItem)
 	d.content = append(d.content, result)
+	d.w.displaySendDirectory()
 	return result
 }
 
@@ -156,6 +157,7 @@ func (d *directory) newFile(name string) *file {
 
 	d.w.newAbstractItem(result, d, name, &result.abstractItem)
 	d.content = append(d.content, result)
+	d.w.displaySendDirectory()
 	return result
 }
 
@@ -210,6 +212,7 @@ func (f *file) newLine() *line {
 
 func (f *file) appendLine(line *line) {
 	f.lines = append(f.lines, line)
+	f.w.displaySendFile(f.i)
 }
 
 type character struct {

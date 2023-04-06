@@ -57,7 +57,7 @@ func TestAdaptorWorldInit(t *testing.T) {
 		Proxy()
 	})
 
-	tw := &testWorld{}
+	tw := &testWorld{AbstractWorld: world.NewAbstractWorld()}
 	world.SetWorld(tw)
 	testWorldId := Proxy()
 	assert.Equal(t, testWorldId, Proxy())
@@ -70,7 +70,7 @@ func TestAdaptorWorldInit(t *testing.T) {
 
 func TestAdaptorWorldLifecycle(t *testing.T) {
 	InitStart()
-	tw := &testWorld{}
+	tw := &testWorld{AbstractWorld: world.NewAbstractWorld()}
 	world.SetWorld(tw)
 	testWorldId := Proxy()
 	InitComplete()
@@ -107,7 +107,7 @@ func TestAdaptorWorldLifecycle(t *testing.T) {
 
 func TestAdaptorWorldCmd(t *testing.T) {
 	InitStart()
-	tw := &testWorld{}
+	tw := &testWorld{AbstractWorld: world.NewAbstractWorld()}
 	world.SetWorld(tw)
 	testWorldId := Proxy()
 	InitComplete()

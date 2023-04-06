@@ -12,7 +12,9 @@ emptyWorld
 	# methods:
 	    # all implementations of world.World
 */
-type emptyWorld struct{}
+type emptyWorld struct {
+	*world.AbstractWorld
+}
 
 func (w *emptyWorld) Name() string {
 	return "empty"
@@ -39,5 +41,5 @@ func (w *emptyWorld) Feel(_ int) []*world.Touch {
 func (w *emptyWorld) Cmd(_ ...any) {}
 
 func Init() {
-	world.SetWorld(&emptyWorld{})
+	world.SetWorld(&emptyWorld{AbstractWorld: world.NewAbstractWorld()})
 }

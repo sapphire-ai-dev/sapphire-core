@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Index</title>
+</head>
+<body onload="load();">
+  <div id="directory">
+    a
+  </div>
+  <div id="file">
+    b
+  </div>
+</body>
+<script>
+  let websocket;
+  const directoryKey = "directory";
+  const fileKey = "file";
+  let keys = [directoryKey, fileKey]
+
+  const load = () => {
+    websocket = new WebSocket("ws://localhost:8080/viewer?name=text");
+    websocket.onmessage = event => receiveMessage(event.data);
+  }
+
+  const receiveMessage = data => {
+    console.log(data)
+    let json = JSON.parse(data);
+    for (let k in keys) {
+      let key = keys[k];
+      console.log(key)
+      if (key in json) {
+        console.log(document.getElementById(key).innerText);
+        document.getElementById(key).innerText = json[key];
+      }
+    }
+  }
+</script>
+</html>

@@ -10,6 +10,7 @@ import (
 // if the agent ever needs to connect to multiple worlds simultaneously, it can connect to this adaptor
 // which would in turn connect to all required worlds on the agent's behalf
 type adaptorWorld struct {
+	*world.AbstractWorld
 	actors     map[int]*actor      // actorId -> actor
 	cycleFuncs map[int]func()      // actorId -> cycle function
 	children   map[int]world.World // child world id -> child world
@@ -53,7 +54,6 @@ func (w *adaptorWorld) Tick() {
 }
 
 var (
-	errInvalidArgs   = errors.New("invalid args")
 	errActorNotFound = errors.New("actor not found")
 	errWorldNotFound = errors.New("world not found")
 )
@@ -114,7 +114,7 @@ func (w *adaptorWorld) CmdLocal(_ ...any) {
 }
 
 func newAdaptorWorld() *adaptorWorld {
-	result := &adaptorWorld{}
+	result := &adaptorWorld{AbstractWorld: world.NewAbstractWorld()}
 	result.Reset()
 	return result
 }

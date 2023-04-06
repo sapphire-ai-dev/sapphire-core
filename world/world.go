@@ -31,5 +31,37 @@ type World interface {
 	Register(actorId int, cycle func())
 	Look(actorId int) []*Image
 	Feel(actorId int) []*Touch
+	Listen(id int) []*LangMessage
+	Speak(speakerId, listenerId *int, content string)
 	Cmd(args ...any)
+}
+
+type AbstractWorld struct {
+	clock              int
+	cycleFuncs         map[int]func()
+	langReceiveBuffers map[int]*langReceiveBuffer
+}
+
+func (w *AbstractWorld) Tick() {
+	for _, f := range w.cycleFuncs {
+		f()
+	}
+}
+
+func (w *AbstractWorld) Reset() {
+	w.clock = 0
+	w.cycleFuncs = map[int]func(){}
+	w.langReceiveBuffers = map[int]*langReceiveBuffer{}
+	w.newLangReceiveBuffer(nil) // everyone hears from this buffer
+}
+
+func (w *AbstractWorld) Register(id int, cycle func()) {
+	w.cycleFuncs[id] = cycle
+	w.newLangReceiveBuffer(&id)
+}
+
+func NewAbstractWorld() *AbstractWorld {
+	result := &AbstractWorld{}
+	result.Reset()
+	return result
 }

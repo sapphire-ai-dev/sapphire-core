@@ -15,6 +15,7 @@ func assertEmptyNotNil(t *testing.T, a any) {
 var testWorldName = "test"
 
 type testWorld struct {
+	*world.AbstractWorld
 	resetCalled      int
 	newActorCalled   int
 	newActorArgs     []any

@@ -15,7 +15,6 @@ func TestTextWorldConstructor(t *testing.T) {
 	assert.NotNil(t, w.rootDirectory)
 	assert.Len(t, w.items, 1)
 	assertEmptyNotNil(t, w.actors)
-	assertEmptyNotNil(t, w.cycleFuncs)
 	assert.Equal(t, w.Name(), "text")
 }
 

@@ -51,7 +51,10 @@
     }, {
       "name": "believe",
       "class": "AuxiliaryRelationType",
-      "type": "believe"
+      "type": "believe",
+      "lType": "agent",
+      "rType": "eat",
+      "negative": false
     }, {
       "name": "believe-inst-0",
       "class": "AuxiliaryRelation",

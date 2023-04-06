@@ -6,10 +6,10 @@ import (
 )
 
 type textWorld struct {
+	*world.AbstractWorld
 	rootDirectory *directory
 	items         map[int]item
 	actors        map[int]*actorPos
-	cycleFuncs    map[int]func()
 }
 
 type actorPos struct {
@@ -35,18 +35,11 @@ func (w *textWorld) Name() string {
 func (w *textWorld) Reset() {
 	w.items = map[int]item{}
 	w.actors = map[int]*actorPos{}
-	w.cycleFuncs = map[int]func(){}
 	w.rootDirectory = &directory{
 		content: []item{},
 	}
 
 	w.newAbstractItem(w.rootDirectory, nil, "", &w.rootDirectory.abstractItem)
-}
-
-func (w *textWorld) Tick() {
-	for _, f := range w.cycleFuncs {
-		f()
-	}
 }
 
 func (w *textWorld) NewActor(_ ...any) (int, []*world.ActionInterface) {
@@ -64,7 +57,7 @@ func (w *textWorld) Register(id int, cycle func()) {
 		panic(errActorNotFound)
 	}
 
-	w.cycleFuncs[id] = cycle
+	w.AbstractWorld.Register(id, cycle)
 }
 
 func (w *textWorld) Look(id int) []*world.Image {
@@ -87,12 +80,17 @@ func (w *textWorld) Feel(_ int) []*world.Touch {
 }
 
 func newTextWorld() *textWorld {
-	result := &textWorld{}
+	result := &textWorld{
+		AbstractWorld: world.NewAbstractWorld(),
+	}
 	result.Reset()
 	return result
 }
 
+var display *world.DisplayClient
+
 func Init() {
 	w := newTextWorld()
 	world.SetWorld(w)
+	display = world.NewDisplayClient(w.Name())
 }
