@@ -5,6 +5,7 @@ import (
 	"github.com/sapphire-ai-dev/sapphire-core/world"
 	"reflect"
 	"sort"
+	"strconv"
 )
 
 type TestActionInterface struct {
@@ -89,6 +90,14 @@ func ternaryEqual(a, b *bool) bool {
 	}
 
 	return *a == *b
+}
+
+func ternaryStr(a *bool) string {
+	if a == nil {
+		return "nil"
+	}
+
+	return strconv.FormatBool(*a)
 }
 
 func mapIntersection[T concept](l, r map[int]T) map[int]T {

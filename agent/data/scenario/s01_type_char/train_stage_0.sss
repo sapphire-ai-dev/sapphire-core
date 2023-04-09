@@ -1,0 +1,225 @@
+{
+  "concepts": [
+    {
+      "name": "blue",
+      "class": "AspectModifierType",
+      "labels": ["color", "blue"]
+    }, {
+      "name": "agent",
+      "class": "SimpleObjectType",
+      "modifierTypes": ["blue"]
+    }, {
+      "name": "agent-self",
+      "class": "SelfObject",
+      "types": ["agent"],
+      "attach": "self"
+    }, {
+      "name": "agent-master",
+      "class": "SimpleObject",
+      "worldId": 123,
+      "types": ["agent"]
+    }, {
+      "name": "create-context",
+      "class": "CreateContextActionType"
+    }, {
+      "name": "create-context-inst",
+      "class": "CreateContextAction",
+      "type": "create-context",
+      "performer": "agent-master",
+      "contextId": 1
+    }, {
+      "name": "context",
+      "class": "ContextObjectType"
+    }, {
+      "name": "context-inst",
+      "class": "ContextObject",
+      "creation": "create-context-inst",
+      "type": "context"
+    }, {
+      "name": "symbol-a",
+      "class": "SymbolObjectType",
+      "symbol": "A"
+    }, {
+      "name": "symbol-a-inst-hypothetical",
+      "class": "SimpleObject",
+      "worldId": 1234,
+      "types": ["symbol-a"],
+      "ctx": "context-inst"
+    }, {
+      "name": "type",
+      "class": "VirtualActionType"
+    }, {
+      "name": "type-a",
+      "class": "VirtualActionType",
+      "core": "type"
+    }, {
+      "name": "type-a-inst-hypothetical",
+      "class": "VirtualAction",
+      "type": "type",
+      "receiver": "symbol-a-inst-hypothetical",
+      "ctx": "context-inst"
+    }, {
+      "name": "press-key-a",
+      "class": "AtomicActionType",
+      "interfaceId": 10
+    }, {
+      "name": "press-key-a-inst-hypothetical",
+      "class": "AtomicAction",
+      "type": "press-key-a",
+      "ctx": "context-inst",
+      "performer": "agent-self"
+    }, {
+      "name": "solution",
+      "class": "VirtualSolutionRelationType"
+    }, {
+      "name": "solution-inst-a",
+      "class": "VirtualSolutionRelation",
+      "type": "solution",
+      "lTarget": "press-key-a-inst-hypothetical",
+      "rTarget": "type-a-inst-hypothetical",
+      "ctx": "context-inst"
+    }, {
+      "name": "want",
+      "class": "AuxiliaryRelationType",
+      "lType": "agent",
+      "rType": "type",
+      "negative": false,
+      "type": "want"
+    }, {
+      "name": "want-change",
+      "class": "ActionStateChangeType",
+      "target": "type"
+    }, {
+      "name": "want-change-inst-0",
+      "class": "ActionStateChange",
+      "type": "want-change",
+      "target": "type-a-inst-hypothetical",
+      "value": 10.0
+    }, {
+      "name": "want-inst-0",
+      "class": "AuxiliaryRelation",
+      "type": "want",
+      "lTarget": "agent-master",
+      "rTarget": "type-a-inst-hypothetical",
+      "wantChange": "want-change-inst-0",
+      "time": "now"
+    }, {
+      "name": "one",
+      "class": "Number",
+      "value": 1
+    }
+  ],
+  "sentences": [
+    {
+      "body": "pressKeyA to type an A",
+      "speaker": "agent-master",
+      "listener": "agent-self",
+      "root": {
+        "word": "",
+        "concept": "solution-inst-a",
+        "children": [
+          {
+            "word": "",
+            "concept": "press-key-a-inst-hypothetical",
+            "children": [
+              {
+                "word": "pressKeyA",
+                "concept": "press-key-a",
+                "children": []
+              }
+            ]
+          }, {
+            "word": "to",
+            "concept": "solution",
+            "children": []
+          }, {
+            "word": "",
+            "concept": "type-a-inst-hypothetical",
+            "children": [
+              {
+                "word": "type",
+                "concept": "type",
+                "children": []
+              }, {
+                "word": "",
+                "concept": "symbol-a-inst-hypothetical",
+                "children": [
+                  {
+                    "word": "an",
+                    "concept": "one",
+                    "children": []
+                  }, {
+                    "word": "A",
+                    "concept": "symbol-a",
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }, {
+      "body": "i want you to type an A",
+      "speaker": "agent-master",
+      "listener": "agent-self",
+      "root": {
+        "word": "",
+        "concept": "want-inst-0",
+        "children": [
+          {
+            "word": "i",
+            "concept": "agent-master",
+            "isPronoun": true,
+            "children": []
+          },
+          {
+            "word": "want",
+            "concept": "want",
+            "children": []
+          },
+          {
+            "word": "",
+            "concept": "type-a-inst-hypothetical",
+            "children": [
+              {
+                "word": "you",
+                "concept": "agent-self",
+                "isPronoun": true,
+                "children": []
+              }, {
+                "word": "to",
+                "concept": "context-inst",
+                "children": []
+              }, {
+                "word": "",
+                "concept": "type-a-inst-hypothetical",
+                "children": [
+                  {
+                    "word": "type",
+                    "concept": "type",
+                    "children": []
+                  }, {
+                    "word": "",
+                    "concept": "symbol-a-inst-hypothetical",
+                    "children": [
+                      {
+                        "word": "an",
+                        "concept": "one",
+                        "children": []
+                      }, {
+                        "word": "A",
+                        "concept": "symbol-a",
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

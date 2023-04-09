@@ -96,8 +96,14 @@ func (t *simpleActionType) debugArgs() map[string]any {
 	return args
 }
 
-func (t *simpleActionType) instantiate(args map[int]any) performableAction {
-	return t.agent.newSimpleAction(t, t.agent.self, t.child().instantiate(args), nil)
+func (t *simpleActionType) instantiate(args map[int]any) map[int]performableAction {
+	result := map[int]performableAction{}
+	for _, child := range t.child().instantiate(args) {
+		inst := t.agent.newSimpleAction(t, t.agent.self, child, nil)
+		result[inst.cid] = inst
+	}
+
+	return result
 }
 
 func (t *simpleActionType) child() performableActionType {

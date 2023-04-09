@@ -216,10 +216,10 @@ func (d *trainSntcData) parse() ([]*trainSntc, map[int]concept) {
 func (d *trainSntcData) parseConceptArgs(data map[string]any) map[int]any {
 	result := map[int]any{}
 	if ctx, ctxOk := mapConcept[*contextObject](d, data, "ctx"); ctxOk {
-		result[conceptArgContext] = ctx
+		result[partIdConceptContext] = ctx
 	}
 	if temporal, temporalOk := mapConcept[temporalObject](d, data, "time"); temporalOk {
-		result[conceptArgTime] = temporal
+		result[partIdConceptTime] = temporal
 	}
 
 	return result

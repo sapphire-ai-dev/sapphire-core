@@ -68,8 +68,8 @@ func (r *abstractRelation) part(partId int) concept {
 func (r *abstractRelation) collectVersions() map[int]concept {
 	result := map[int]concept{}
 	for _, c := range r.lTarget().relations(map[int]any{
-		conceptArgContext: r.ctx(),
-		conceptArgTime:    r.time(),
+		partIdConceptContext: r.ctx(),
+		partIdConceptTime:    r.time(),
 	}) {
 		if r._self.versionCollides(c) {
 			result[c.id()] = c
@@ -84,11 +84,11 @@ func (r *abstractRelation) connectVersion(next concept) {
 		r._nextVersion = next.createReference(r._self, false)
 		next.abs()._prevVersion = r._self.createReference(next, false)
 		rct := r.agent.newRelationChangeType(r._type(), next.(relation)._type(), map[int]any{
-			conceptArgContext: r.ctx(),
+			partIdConceptContext: r.ctx(),
 		})
 		rc := r.agent.newRelationChange(rct, r._self.(relation), next.(relation), map[int]any{
-			conceptArgContext: r.ctx(),
-			conceptArgTime:    r.time().end(),
+			partIdConceptContext: r.ctx(),
+			partIdConceptTime:    r.time().end(),
 		})
 		r.agent.mind.add(rc)
 	}

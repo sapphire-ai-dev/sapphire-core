@@ -22,8 +22,10 @@ func TestSimpleActionTypeInstantiate(t *testing.T) {
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
 	sot := agent.newSimpleObjectType(conceptSourceObservation, map[int]modifierType{}, nil)
 	sat := agent.newSimpleActionType(sot, aat, nil)
-	sa := sat.instantiate(nil)
-	assert.Equal(t, sa, sat.instantiate(nil))
+	var sa *simpleAction
+	for _, inst := range sat.instantiate(nil) {
+		sa = inst.(*simpleAction)
+	}
 	assert.Equal(t, sat, sa.part(partIdActionT))
 	assert.Equal(t, agent.self, sa.part(partIdActionPerformer))
 	assert.Nil(t, sa.part(partIdActionReceiver))
@@ -46,7 +48,10 @@ func TestSimpleActionTypeDebug(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
 	sat := agent.newSimpleActionType(nil, aat, nil)
-	sa := sat.instantiate(nil)
+	var sa *simpleAction
+	for _, inst := range sat.instantiate(nil) {
+		sa = inst.(*simpleAction)
+	}
 	assert.Contains(t, sat.debug("", 2), toReflect[*atomicActionType]().Name())
 	assert.Contains(t, sa.debug("", 2), toReflect[*atomicAction]().Name())
 }
@@ -56,7 +61,10 @@ func TestSimpleActionLifecycle(t *testing.T) {
 	tai := newTestActionInterface()
 	aat := agent.newAtomicActionType(tai.instantiate(), nil)
 	sat := agent.newSimpleActionType(nil, aat, nil)
-	sa := sat.instantiate(nil)
+	var sa *simpleAction
+	for _, inst := range sat.instantiate(nil) {
+		sa = inst.(*simpleAction)
+	}
 
 	assert.Equal(t, sa.state(), actionStateIdle)
 	assert.False(t, sa.step())

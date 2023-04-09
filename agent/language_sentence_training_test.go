@@ -2,6 +2,7 @@ package agent
 
 import (
 	"github.com/sapphire-ai-dev/sapphire-core/world"
+	"github.com/sapphire-ai-dev/sapphire-core/world/text"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -111,4 +112,25 @@ func TestParseAuxiliary(t *testing.T) {
 	// advances agent by 1 time step
 	agent.cycle()
 	assert.Equal(t, trainData.testActionInterfaces[4].StepCount, 1) // agent performed requested action!
+}
+
+func TestParseText0(t *testing.T) {
+	agent := newTextWorldAgent()
+	rootId, fileId := 0, 0
+	world.Cmd(text.CmdTypeGetRootDirectoryId, &rootId)
+	world.Cmd(text.CmdTypeCreateFile, rootId, "tmp.txt", &fileId)
+	world.Cmd(text.CmdTypeMoveActor, agent.self.worldId, fileId)
+	trainData, sentences, _ := agent.language.trainParser.parse("data/scenario/s01_type_char/train_stage_0.sss")
+	for _, sentence := range sentences {
+		sentence.rootNode.build()
+	}
+
+	for _, sentence := range sentences {
+		ctx := agent.language.newSntcCtx(trainData.namedConcepts["agent-master"].(object), agent.self)
+		sn := agent.language.fit(strings.Split(sentence.body, " "), ctx)
+		assert.Equal(t, strings.Join(sn.str(), " "), sentence.body)
+	}
+
+	agent.mind.add(trainData.namedConcepts["type"])
+	agent.cycle()
 }

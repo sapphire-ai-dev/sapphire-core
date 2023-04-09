@@ -28,7 +28,7 @@ type conceptImplDecorator struct {
 
 func (d *conceptImplDecorator) modifiers(args map[int]any) map[int]modifier {
 	result := parseRefs[modifier](d.abs.agent, d._modifiers)
-	if temporal, seen := conceptArg[temporalObject](args, conceptArgTime); seen {
+	if temporal, seen := conceptArg[temporalObject](args, partIdConceptTime); seen {
 		result = filterOverlapTemporal[modifier](d.abs.agent.time, result, temporal)
 	}
 
@@ -49,7 +49,7 @@ func (d *conceptImplDecorator) addModifier(m modifier) {
 
 func (d *conceptImplDecorator) relations(args map[int]any) map[int]relation {
 	result := parseRefs[relation](d.abs.agent, d._relations)
-	if temporal, seen := conceptArg[temporalObject](args, conceptArgTime); seen {
+	if temporal, seen := conceptArg[temporalObject](args, partIdConceptTime); seen {
 		result = filterOverlapTemporal[relation](d.abs.agent.time, result, temporal)
 	}
 
@@ -106,7 +106,7 @@ func (d *conceptImplDecorator) setTime(time temporalObject) {
 
 func (d *conceptImplDecorator) auxiliaries(args map[int]any) map[int]*auxiliaryRelation {
 	result := parseRefs[*auxiliaryRelation](d.abs.agent, d._auxiliaries)
-	if temporal, seen := conceptArg[temporalObject](args, conceptArgTime); seen {
+	if temporal, seen := conceptArg[temporalObject](args, partIdConceptTime); seen {
 		result = filterOverlapTemporal[*auxiliaryRelation](d.abs.agent.time, result, temporal)
 	}
 
@@ -144,7 +144,7 @@ func injectConceptArg(args map[int]any, key int, val concept) (map[int]any, bool
 			return args, true
 		}
 	} else if isNil(val) == false {
-		args[conceptArgContext] = val
+		args[partIdConceptContext] = val
 	}
 
 	return args, false

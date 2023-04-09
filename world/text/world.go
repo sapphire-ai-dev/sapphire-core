@@ -33,6 +33,7 @@ func (w *textWorld) Name() string {
 }
 
 func (w *textWorld) Reset() {
+	w.AbstractWorld.Reset()
 	w.items = map[int]item{}
 	w.actors = map[int]*actorPos{}
 	w.rootDirectory = &directory{

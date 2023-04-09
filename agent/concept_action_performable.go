@@ -17,9 +17,11 @@ type performableAction interface {
 
 type performableActionType interface {
 	actionType
-	value() float64
+	value(inst performableAction) float64
+	predictValue(args map[int]any) map[int]float64 // hypothesized action id -> hypothesized value
+	predictValueHelper(args map[int]any, visitedTypes map[int]performableActionType, result map[int]float64)
 	conditions() map[int]conditionType
-	instantiate(args map[int]any) performableAction
+	instantiate(args map[int]any) map[int]performableAction
 	receiverType() objectType
 	update(inst performableAction)
 }
@@ -114,7 +116,7 @@ func (a *abstractPerformableAction) snapshot(timing int, overrideMind map[int]co
 	instParts, _ := a.instShareParts()
 	for _, condType := range a.t.c.(performableActionType).conditions() {
 		condType.typeLockSync(a.t.c, instParts)
-		a._snapshots[timing].condTruth[condType.id()] = condType.verify(map[int]any{conceptArgTime: a.agent.time.now})
+		a._snapshots[timing].condTruth[condType.id()] = condType.verify(map[int]any{partIdConceptTime: a.agent.time.now})
 		condType.typeUnlockSync()
 	}
 }
@@ -129,6 +131,23 @@ type abstractPerformableActionType struct {
 	_conditions      map[int]*memReference
 	_causations      map[int]*memReference
 	causationRecords map[int]*causationRecord
+}
+
+func (t *abstractPerformableActionType) predictValue(args map[int]any) map[int]float64 {
+	visitedTypes, result := map[int]performableActionType{}, map[int]float64{}
+	t.predictValueHelper(args, visitedTypes, result)
+	return result
+}
+
+func (t *abstractPerformableActionType) predictValueHelper(args map[int]any,
+	visitedTypes map[int]performableActionType, result map[int]float64) {
+	if _, seen := visitedTypes[t.cid]; seen {
+		return
+	}
+
+	for _, inst := range t._self.(performableActionType).instantiate(args) {
+		result[inst.id()] = t.value(inst)
+	}
 }
 
 func (t *abstractPerformableActionType) conditions() map[int]conditionType {
@@ -186,8 +205,8 @@ func (t *abstractPerformableActionType) update(inst performableAction) {
 	}
 }
 
-func (t *abstractPerformableActionType) value() float64 {
-	actionInstParts := t.searchInstParts()
+func (t *abstractPerformableActionType) value(inst performableAction) float64 {
+	actionInstParts, _ := inst.instShareParts()
 	if actionInstParts == nil {
 		return math.Inf(-1)
 	}
@@ -229,7 +248,7 @@ func (t *abstractPerformableActionType) conditionTruth(syncMap map[int]concept) 
 	result := map[int]*bool{}
 	for conditionId, condition := range t.conditions() {
 		condition.typeLockSync(t._self, syncMap)
-		result[conditionId] = condition.verify(map[int]any{conceptArgTime: t.agent.time.now})
+		result[conditionId] = condition.verify(map[int]any{partIdConceptTime: t.agent.time.now})
 		condition.typeUnlockSync()
 	}
 

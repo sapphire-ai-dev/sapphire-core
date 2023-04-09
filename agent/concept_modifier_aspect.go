@@ -27,7 +27,7 @@ func (m *aspectModifier) versioningReplicate() concept {
 	result := &aspectModifier{params: m.params}
 	args := map[int]any{}
 	if m.ctx() != nil {
-		args[conceptArgContext] = m.ctx()
+		args[partIdConceptContext] = m.ctx()
 	}
 
 	m.agent.newAbstractModifier(result, m._type(), m.target(), m.source(), args, &result.abstractModifier)
@@ -79,7 +79,7 @@ func (t *aspectModifierType) generalize(other concept) {
 	gAsp := t.agent.aspect.lowestCommonAncestor(t.aspect, o.aspect)
 	args := map[int]any{}
 	if ctx, ctxMatch := t.agent.commonCtx(t, o); ctxMatch {
-		args[conceptArgContext] = ctx
+		args[partIdConceptContext] = ctx
 	}
 
 	gen := t.agent.newAspectModifierType(gAsp, args)

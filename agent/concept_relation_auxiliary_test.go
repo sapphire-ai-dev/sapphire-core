@@ -29,13 +29,13 @@ func TestAuxiliaryRelationConstructor(t *testing.T) {
 	art := agent.newAuxiliaryRelationType(auxiliaryTypeIdWant, false, sot, aat, nil)
 
 	co := newTestContext(agent, 0)
-	aa := agent.newAtomicAction(aat, agent.self, map[int]any{conceptArgContext: co})
+	aa := agent.newAtomicAction(aat, agent.self, map[int]any{partIdConceptContext: co})
 
 	asct := agent.newActionStateChangeType(aat, nil)
 	asct.addValue(10.0)
 	asc := agent.newActionStateChange(asct, aa, nil)
 	ar := agent.newAuxiliaryRelation(art, agent.self, aa, map[int]any{
-		conceptArgRelationAuxiliaryWantChange: asc,
+		partIdRelationAuxiliaryWantChange: asc,
 	})
 
 	ar.interpret()
@@ -60,19 +60,19 @@ func TestAuxiliaryRelationVersioning(t *testing.T) {
 	artN := agent.newAuxiliaryRelationType(auxiliaryTypeIdWant, true, nil, nil, nil)
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
 	co := newTestContext(agent, 0)
-	aa := agent.newAtomicAction(aat, agent.self, map[int]any{conceptArgContext: co})
+	aa := agent.newAtomicAction(aat, agent.self, map[int]any{partIdConceptContext: co})
 	asct := agent.newActionStateChangeType(aat, nil)
 	asc := agent.newActionStateChange(asct, aa, nil)
 	tpos, tsos := generateTime(agent, 0, 6)
 	arT := agent.newAuxiliaryRelation(artP, agent.self, aa, map[int]any{
-		conceptArgTime:                        tsos[2][4],
-		conceptArgRelationAuxiliaryWantChange: asc,
+		partIdConceptTime:                 tsos[2][4],
+		partIdRelationAuxiliaryWantChange: asc,
 	})
 	assert.Equal(t, arT.time().start(), tpos[2])
 	assert.Equal(t, arT.time().end(), tpos[4])
 
 	arN := agent.newAuxiliaryRelation(artN, agent.self, aa, map[int]any{
-		conceptArgTime: tsos[3][5],
+		partIdConceptTime: tsos[3][5],
 	})
 	assert.Equal(t, arT.time().start(), tpos[2])
 	assert.Equal(t, arT.time().end(), tpos[3])
@@ -86,20 +86,20 @@ func TestAuxiliaryRelationVersioningInterrupt(t *testing.T) {
 	artN := agent.newAuxiliaryRelationType(auxiliaryTypeIdWant, true, nil, nil, nil)
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
 	co := newTestContext(agent, 0)
-	aa := agent.newAtomicAction(aat, agent.self, map[int]any{conceptArgContext: co})
+	aa := agent.newAtomicAction(aat, agent.self, map[int]any{partIdConceptContext: co})
 	asct := agent.newActionStateChangeType(aat, nil)
 	asc := agent.newActionStateChange(asct, aa, nil)
 	tpos, tsos := generateTime(agent, 0, 6)
 	agent.newAuxiliaryRelation(artP, agent.self, aa, map[int]any{
-		conceptArgTime:                        tsos[2][5],
-		conceptArgRelationAuxiliaryWantChange: asc,
+		partIdConceptTime:                 tsos[2][5],
+		partIdRelationAuxiliaryWantChange: asc,
 	})
 	assert.Len(t, aa.relations(nil), 1)
 	agent.newAuxiliaryRelation(artN, agent.self, aa, map[int]any{
-		conceptArgTime: tsos[3][4],
+		partIdConceptTime: tsos[3][4],
 	})
 	assert.Len(t, aa.relations(nil), 4)
-	assert.Len(t, aa.relations(map[int]any{conceptArgTime: tpos[5]}), 2)
+	assert.Len(t, aa.relations(map[int]any{partIdConceptTime: tpos[5]}), 2)
 }
 
 func TestAuxiliaryRelationWantCancel(t *testing.T) {
@@ -111,12 +111,12 @@ func TestAuxiliaryRelationWantCancel(t *testing.T) {
 	agent.self.addType(sot)
 	art := agent.newAuxiliaryRelationType(auxiliaryTypeIdWant, false, sot, aat, nil)
 	co := newTestContext(agent, 0)
-	aa := agent.newAtomicAction(aat, agent.self, map[int]any{conceptArgContext: co})
+	aa := agent.newAtomicAction(aat, agent.self, map[int]any{partIdConceptContext: co})
 	asct := agent.newActionStateChangeType(aat, nil)
 	asct.addValue(10.0)
 	asc := agent.newActionStateChange(asct, aa, nil)
 	ar := agent.newAuxiliaryRelation(art, agent.self, aa, map[int]any{
-		conceptArgRelationAuxiliaryWantChange: asc,
+		partIdRelationAuxiliaryWantChange: asc,
 	})
 
 	ar.interpret()
@@ -137,7 +137,7 @@ func TestAuxiliaryRelationWantCancel(t *testing.T) {
 
 	assert.Nil(t, agent.memory.types[toReflect[*relationChange]()])
 	arN := agent.newAuxiliaryRelation(artN, agent.self, aa, map[int]any{
-		conceptArgTime: agent.newTimeSegmentObject(agent.time.now.start(), nil, nil),
+		partIdConceptTime: agent.newTimeSegmentObject(agent.time.now.start(), nil, nil),
 	})
 	assert.Len(t, agent.memory.types[toReflect[*relationChange]()].items, 1)
 
@@ -147,7 +147,7 @@ func TestAuxiliaryRelationWantCancel(t *testing.T) {
 	assert.Equal(t, tai.StepCount, 2)
 
 	arP := agent.newAuxiliaryRelation(art, agent.self, aa, map[int]any{
-		conceptArgTime: agent.newTimeSegmentObject(agent.time.now.start(), nil, nil),
+		partIdConceptTime: agent.newTimeSegmentObject(agent.time.now.start(), nil, nil),
 	})
 	assert.Len(t, agent.memory.types[toReflect[*relationChange]()].items, 2)
 	assert.Equal(t, arN.time().end(), arP.time().start())

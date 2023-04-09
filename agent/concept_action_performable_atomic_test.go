@@ -21,8 +21,10 @@ func TestAtomicActionTypeConstructor(t *testing.T) {
 func TestAtomicActionTypeInstantiate(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
-	aa := aat.instantiate(nil)
-	assert.Equal(t, aa, aat.instantiate(nil))
+	var aa performableAction
+	for _, inst := range aat.instantiate(nil) {
+		aa = inst
+	}
 	assert.Equal(t, aat, aa.part(partIdActionT))
 	assert.Equal(t, agent.self, aa.part(partIdActionPerformer))
 	assert.Nil(t, aa.part(partIdActionReceiver))
@@ -32,7 +34,10 @@ func TestAtomicActionTypeInstantiate(t *testing.T) {
 func TestAtomicActionDebug(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
-	aa := aat.instantiate(nil)
+	var aa performableAction
+	for _, inst := range aat.instantiate(nil) {
+		aa = inst
+	}
 	assert.Contains(t, aat.debug("", 1), toReflect[*TestActionInterface]().Name())
 	assert.Contains(t, aa.debug("", 2), toReflect[*TestActionInterface]().Name())
 }
@@ -41,7 +46,10 @@ func TestAtomicActionLifecycle(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	tai := newTestActionInterface()
 	aat := agent.newAtomicActionType(tai.instantiate(), nil)
-	aa := aat.instantiate(nil)
+	var aa performableAction
+	for _, inst := range aat.instantiate(nil) {
+		aa = inst
+	}
 
 	assert.Equal(t, aa.state(), actionStateIdle)
 	assert.False(t, aa.step())

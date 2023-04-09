@@ -139,8 +139,16 @@ func (t *sequentialActionType) next() performableActionType {
 	return parseRef[performableActionType](t.agent, t._next)
 }
 
-func (t *sequentialActionType) instantiate(args map[int]any) performableAction {
-	return t.agent.newSequentialAction(t, t.agent.self, t.first().instantiate(args), t.next().instantiate(args), nil)
+func (t *sequentialActionType) instantiate(args map[int]any) map[int]performableAction {
+	result := map[int]performableAction{}
+	for _, first := range t.first().instantiate(args) {
+		for _, next := range t.next().instantiate(args) {
+			inst := t.agent.newSequentialAction(t, t.agent.self, first, next, nil)
+			result[inst.cid] = inst
+		}
+	}
+
+	return result
 }
 
 func (a *Agent) newSequentialActionType(receiverType objectType, firstChild,

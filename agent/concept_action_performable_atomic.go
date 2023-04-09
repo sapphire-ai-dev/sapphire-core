@@ -76,8 +76,9 @@ func (t *atomicActionType) match(other concept) bool {
 		t.actionInterface == o.actionInterface
 }
 
-func (t *atomicActionType) instantiate(args map[int]any) performableAction {
-	return t.agent.newAtomicAction(t, t.agent.self, args)
+func (t *atomicActionType) instantiate(args map[int]any) map[int]performableAction {
+	inst := t.agent.newAtomicAction(t, t.agent.self, args)
+	return map[int]performableAction{inst.cid: inst}
 }
 
 func (t *atomicActionType) debugArgs() map[string]any {
@@ -90,6 +91,6 @@ func (a *Agent) newAtomicActionType(actionInterface *world.ActionInterface, args
 	result := &atomicActionType{
 		actionInterface: actionInterface,
 	}
-	a.newAbstractPerformableActionType(result, nil, nil, &result.abstractPerformableActionType)
+	a.newAbstractPerformableActionType(result, nil, args, &result.abstractPerformableActionType)
 	return result.memorize().(*atomicActionType)
 }

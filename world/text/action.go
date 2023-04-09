@@ -269,16 +269,19 @@ func (w *textWorld) specialKeyWrap(actorId, cmd int) *world.ActionInterface {
 
 func (w *textWorld) newActionInterfaces(actorId int) []*world.ActionInterface {
 	var result []*world.ActionInterface
-	for cmd := range changeItemCmds {
-		result = append(result, w.changeItemWrap(actorId, cmd))
-	}
 
-	for cmd := range pressKeyCmds {
-		result = append(result, w.pressKeyWrap(actorId, cmd))
+	for cmd := PressKeyCmd0; cmd < PressKeyCmdEnd; cmd++ {
+		if _, seen := pressKeyCmds[cmd]; seen {
+			result = append(result, w.pressKeyWrap(actorId, cmd))
+		}
 	}
 
 	for cmd := range specialKeyCmds {
 		result = append(result, w.specialKeyWrap(actorId, cmd))
+	}
+
+	for cmd := range changeItemCmds {
+		result = append(result, w.changeItemWrap(actorId, cmd))
 	}
 
 	return result

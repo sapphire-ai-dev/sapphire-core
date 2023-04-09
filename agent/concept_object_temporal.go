@@ -96,7 +96,7 @@ func (a *Agent) newTimeSegmentObject(start, end *timePointObject, args map[int]a
 	}
 
 	collision := false
-	if args, collision = injectConceptArg(args, conceptArgContext, ctx); collision {
+	if args, collision = injectConceptArg(args, partIdConceptContext, ctx); collision {
 		return nil
 	}
 	result := &timeSegmentObject{}

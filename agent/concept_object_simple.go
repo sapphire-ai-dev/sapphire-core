@@ -72,7 +72,7 @@ func (t *simpleObjectType) generalize(other concept) {
 
 	args := map[int]any{}
 	if ctx, ctxMatch := t.agent.commonCtx(t, o); ctxMatch {
-		args[conceptArgContext] = ctx
+		args[partIdConceptContext] = ctx
 	}
 
 	gen := t.agent.newSimpleObjectType(conceptSourceGeneralization, commonModifs, args)

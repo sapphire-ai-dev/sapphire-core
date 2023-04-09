@@ -123,6 +123,7 @@ const (
 	partIdActionSimpleChild
 	partIdActionSequentialFirst
 	partIdActionSequentialNext
+	partIdActionVirtualSolution
 	partIdModifierT
 	partIdModifierTarget
 	partIdObjectT
@@ -130,6 +131,7 @@ const (
 	partIdRelationT
 	partIdRelationLTarget
 	partIdRelationRTarget
+	partIdRelationAuxiliaryWantChange
 	partIdRelationAuxiliaryPerformer
 	partIdRelationAuxiliaryReceiver
 )
@@ -158,6 +160,11 @@ func (r *partRecord) initClasses() {
 		partIdActionSequentialFirst: toReflect[action](),
 		partIdActionSequentialNext:  toReflect[action](),
 	})
+	r.initClassesSingle(toReflect[*virtualActionType](), toReflect[actionType](), map[int]reflect.Type{})
+	r.initClassesSingle(toReflect[*virtualAction](), toReflect[action](), map[int]reflect.Type{
+		partIdActionT:               toReflect[*virtualActionType](),
+		partIdActionVirtualSolution: toReflect[performableAction](),
+	})
 
 	r.initClassesSingle(toReflect[modifierType](), toReflect[concept](), map[int]reflect.Type{})
 	r.initClassesSingle(toReflect[modifier](), toReflect[concept](), map[int]reflect.Type{
@@ -178,6 +185,9 @@ func (r *partRecord) initClasses() {
 	r.initClassesSingle(toReflect[*simpleObject](), toReflect[object](), map[int]reflect.Type{})
 
 	r.initClassesSingle(toReflect[*selfObject](), toReflect[object](), map[int]reflect.Type{})
+
+	r.initClassesSingle(toReflect[symbolicObjectType](), toReflect[objectType](), map[int]reflect.Type{})
+	r.initClassesSingle(toReflect[*symbolObjectType](), toReflect[symbolicObjectType](), map[int]reflect.Type{})
 
 	r.initClassesSingle(toReflect[*contextObjectType](), toReflect[objectType](), map[int]reflect.Type{})
 	r.initClassesSingle(toReflect[*contextObject](), toReflect[object](), map[int]reflect.Type{})
@@ -200,6 +210,12 @@ func (r *partRecord) initClasses() {
 		partIdRelationT:       toReflect[*auxiliaryRelationType](),
 		partIdRelationLTarget: toReflect[object](),
 		partIdRelationRTarget: toReflect[action](),
+	})
+	r.initClassesSingle(toReflect[*virtualSolutionRelationType](), toReflect[relationType](), map[int]reflect.Type{})
+	r.initClassesSingle(toReflect[*virtualSolutionRelation](), toReflect[relation](), map[int]reflect.Type{
+		partIdRelationT:       toReflect[*virtualSolutionRelationType](),
+		partIdRelationLTarget: toReflect[performableAction](),
+		partIdRelationRTarget: toReflect[*virtualAction](),
 	})
 
 	r.initClassesSingle(toReflect[*number](), toReflect[concept](), map[int]reflect.Type{})
@@ -237,13 +253,6 @@ func (r *partRecord) generateImaginary(class reflect.Type, args map[int]any) con
 	}
 	return generator(args)
 }
-
-const (
-	conceptArgContext = iota
-	conceptArgTime
-
-	conceptArgRelationAuxiliaryWantChange
-)
 
 func conceptArg[T any](m map[int]any, key int) (T, bool) {
 	if m != nil {

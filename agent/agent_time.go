@@ -27,7 +27,7 @@ func (t *agentTime) temporalObjJoin(l, r temporalObject, ordered bool) temporalO
 			return l
 		}
 
-		return t.agent.newTimeSegmentObject(lp, rp, map[int]any{conceptArgContext: ctx})
+		return t.agent.newTimeSegmentObject(lp, rp, map[int]any{partIdConceptContext: ctx})
 	}
 
 	if isNil(l) || isNil(r) {
@@ -35,7 +35,7 @@ func (t *agentTime) temporalObjJoin(l, r temporalObject, ordered bool) temporalO
 	}
 
 	s, e := t.timePointMin(l.start(), r.start()), t.timePointMax(l.end(), r.end())
-	return t.agent.newTimeSegmentObject(s, e, map[int]any{conceptArgContext: ctx})
+	return t.agent.newTimeSegmentObject(s, e, map[int]any{partIdConceptContext: ctx})
 }
 
 // currently only supports time points with non-nil clock times
@@ -49,7 +49,7 @@ func (t *agentTime) temporalObjCompare(l, r temporalObject) map[int]relation {
 
 	args := map[int]any{}
 	if ctx != nil {
-		args[conceptArgContext] = ctx
+		args[partIdConceptContext] = ctx
 	}
 
 	if lsc == lec && rsc == rec { // both are time points

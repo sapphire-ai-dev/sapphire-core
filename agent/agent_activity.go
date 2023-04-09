@@ -2,17 +2,19 @@ package agent
 
 import (
 	"github.com/sapphire-ai-dev/sapphire-core/world"
+	"math"
 	"math/rand"
 )
 
 type agentActivity struct {
-	agent             *Agent
-	atomicActionTypes map[int]*atomicActionType
-	activeAction      performableAction
-	prevAction        performableAction
-	completedActions  []performableAction
-	prevActionValues  map[int]float64
-	currActionValues  map[int]float64
+	agent                  *Agent
+	atomicActionTypes      map[int]*atomicActionType
+	activeAction           performableAction
+	prevAction             performableAction
+	completedActions       []performableAction
+	prevActionValues       map[int]float64
+	currActionValues       map[int]float64
+	atomicActionInterfaces []*world.ActionInterface
 }
 
 func (a *agentActivity) cycle() {
@@ -91,38 +93,39 @@ func (a *agentActivity) reflectSingle(inst performableAction) {
 }
 
 func (a *agentActivity) startAction() {
-	var bestActionTypes []performableActionType
+	var bestActions []performableAction
 	bestVal := 0.0
 	a.clearActionValues()
 	for _, pat := range mindConcepts[performableActionType](a.agent.mind) {
-		patVal := pat.value()
-		a.currActionValues[pat.id()] = patVal
+		for pa, paVal := range pat.predictValue(map[int]any{partIdConceptTime: a.agent.time.now}) {
+			a.currActionValues[pat.id()] = math.Max(a.currActionValues[pat.id()], paVal)
 
-		if patVal > bestVal {
-			bestActionTypes = []performableActionType{}
-			bestVal = patVal
-		}
+			if paVal > bestVal {
+				bestActions = []performableAction{}
+				bestVal = paVal
+			}
 
-		if patVal == bestVal {
-			bestActionTypes = append(bestActionTypes, pat)
-		}
-	}
-
-	var bestActionType performableActionType
-	if len(bestActionTypes) > 0 && bestVal > 0 {
-		bestActionType = bestActionTypes[rand.Intn(len(bestActionTypes))]
-	}
-
-	if bestActionType != nil {
-		a.activeAction = bestActionType.instantiate(map[int]any{conceptArgTime: a.agent.time.now})
-		if bestActionType.receiverType() != nil {
-			for _, candidateReceiver := range mindConcepts[object](a.agent.mind) {
-				if _, seen := candidateReceiver.types()[bestActionType.receiverType().id()]; seen {
-					a.activeAction.setReceiver(candidateReceiver)
-					break
-				}
+			if paVal == bestVal {
+				bestActions = append(bestActions, a.agent.memory.find(pa).(performableAction))
 			}
 		}
+	}
+
+	var bestAction performableAction
+	if len(bestActions) > 0 && bestVal > 0 {
+		bestAction = bestActions[rand.Intn(len(bestActions))]
+	}
+
+	if bestAction != nil {
+		a.activeAction = bestAction
+		//if bestActionType.receiverType() != nil {
+		//	for _, candidateReceiver := range mindConcepts[object](a.agent.mind) {
+		//		if _, seen := candidateReceiver.types()[bestActionType.receiverType().id()]; seen {
+		//			a.activeAction.setReceiver(candidateReceiver)
+		//			break
+		//		}
+		//	}
+		//}
 	}
 }
 
@@ -175,4 +178,6 @@ func (a *Agent) newAgentActivity(interfaces []*world.ActionInterface) {
 		aat := a.newAtomicActionType(actionInterface, nil)
 		a.activity.atomicActionTypes[aat.id()] = aat
 	}
+
+	a.activity.atomicActionInterfaces = interfaces
 }

@@ -89,15 +89,15 @@ func newTestContext(agent *Agent, contextId int) *contextObject {
 func TestTimePointObjectWithContext(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	co0 := newTestContext(agent, 0)
-	tpo0 := agent.newTimePointObject(&agent.time.clock, map[int]any{conceptArgContext: co0})
+	tpo0 := agent.newTimePointObject(&agent.time.clock, map[int]any{partIdConceptContext: co0})
 	assert.Equal(t, co0, tpo0.ctx())
 	assert.Equal(t, co0, tpo0.part(partIdConceptContext))
-	assert.Equal(t, tpo0, agent.newTimePointObject(&agent.time.clock, map[int]any{conceptArgContext: co0}))
+	assert.Equal(t, tpo0, agent.newTimePointObject(&agent.time.clock, map[int]any{partIdConceptContext: co0}))
 	assert.NotEqual(t, tpo0, agent.newTimePointObject(&agent.time.clock, nil))
 
 	agent.time.clock++
 	assert.Nil(t, tpo0.join(agent.newTimePointObject(&agent.time.clock, nil)))
-	tpo1 := agent.newTimePointObject(&agent.time.clock, map[int]any{conceptArgContext: co0})
+	tpo1 := agent.newTimePointObject(&agent.time.clock, map[int]any{partIdConceptContext: co0})
 	tso := tpo0.join(tpo1)
 	assert.Equal(t, co0, tso.ctx())
 
@@ -107,7 +107,7 @@ func TestTimePointObjectWithContext(t *testing.T) {
 	assert.Equal(t, tso, agent.newTimeSegmentObject(tpo0, tpo1, nil))
 	co1 := newTestContext(agent, 1)
 	assert.NotNil(t, agent.newTimeSegmentObject(nil, nil, nil))
-	assert.Nil(t, agent.newTimeSegmentObject(tpo0, tpo1, map[int]any{conceptArgContext: co1}))
+	assert.Nil(t, agent.newTimeSegmentObject(tpo0, tpo1, map[int]any{partIdConceptContext: co1}))
 }
 
 func TestTemporalObjectJoin(t *testing.T) {

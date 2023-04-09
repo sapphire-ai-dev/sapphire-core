@@ -22,6 +22,12 @@ func (l *agentLanguage) initConceptParsers() {
 	l.conceptParsers["ContextObject"] = l.parserContextObject
 	l.conceptParsers["CreateContextActionType"] = l.parserCreateContextActionType
 	l.conceptParsers["CreateContextAction"] = l.parserCreateContextAction
+
+	l.conceptParsers["SymbolObjectType"] = l.parserSymbolObjectType
+	l.conceptParsers["VirtualActionType"] = l.parserVirtualActionType
+	l.conceptParsers["VirtualAction"] = l.parserVirtualAction
+	l.conceptParsers["VirtualSolutionRelationType"] = l.parserVirtualSolutionRelationType
+	l.conceptParsers["VirtualSolutionRelation"] = l.parserVirtualSolutionRelation
 }
 
 func (l *agentLanguage) parserAspectModifierType(_ *trainSntcData, data map[string]any, args map[int]any) concept {
@@ -51,7 +57,14 @@ func (l *agentLanguage) parserAtomicActionType(d *trainSntcData, data map[string
 		return nil
 	}
 
-	result := l.agent.newAtomicActionType(d.newActionInterface(actionInterfaceId), args)
+	var actionInterface *world.ActionInterface
+	if actionInterfaceId < len(l.agent.activity.atomicActionInterfaces) {
+		actionInterface = l.agent.activity.atomicActionInterfaces[actionInterfaceId]
+	} else {
+		actionInterface = d.newActionInterface(actionInterfaceId)
+	}
+
+	result := l.agent.newAtomicActionType(actionInterface, args)
 	l.agent.mind.add(result)
 	return result
 }
@@ -210,7 +223,7 @@ func (l *agentLanguage) parserAuxiliaryRelation(d *trainSntcData, data map[strin
 
 	wantChange, wantChangeOk := mapConcept[*actionStateChange](d, data, "wantChange")
 	if wantChangeOk {
-		args[conceptArgRelationAuxiliaryWantChange] = wantChange
+		args[partIdRelationAuxiliaryWantChange] = wantChange
 	}
 
 	result := l.agent.newAuxiliaryRelation(art, lTarget, rTarget, args)
@@ -240,4 +253,52 @@ func (l *agentLanguage) parserActionStateChange(d *trainSntcData, data map[strin
 	}
 
 	return l.agent.newActionStateChange(asct, target, args)
+}
+
+func (l *agentLanguage) parserSymbolObjectType(_ *trainSntcData, data map[string]any, args map[int]any) concept {
+	symbol, symbolOk := mapVal[string](data, "symbol")
+	if !symbolOk {
+		return nil
+	}
+
+	return l.agent.newSymbolObjectType(conceptSourceObservation, symbol, args)
+}
+
+func (l *agentLanguage) parserVirtualActionType(d *trainSntcData, data map[string]any, args map[int]any) concept {
+	core, _ := mapConcept[*virtualActionType](d, data, "core")
+	receiver, _ := mapConcept[objectType](d, data, "receiver")
+	return l.agent.newVirtualActionType(core, receiver, args)
+}
+
+func (l *agentLanguage) parserVirtualAction(d *trainSntcData, data map[string]any, args map[int]any) concept {
+	vat, vatOk := mapConcept[*virtualActionType](d, data, "type")
+	if !vatOk {
+		return nil
+	}
+	child, _ := mapConcept[performableAction](d, data, "child")
+	performer, performerOk := mapConcept[object](d, data, "performer")
+	if !performerOk {
+		performer = l.agent.self
+	}
+
+	return l.agent.newVirtualAction(vat, performer, child, args)
+}
+
+func (l *agentLanguage) parserVirtualSolutionRelationType(_ *trainSntcData, _ map[string]any,
+	args map[int]any) concept {
+	return l.agent.newVirtualSolutionRelationType(args)
+}
+
+func (l *agentLanguage) parserVirtualSolutionRelation(d *trainSntcData, data map[string]any,
+	args map[int]any) concept {
+	t, tOk := mapConcept[*virtualSolutionRelationType](d, data, "type")
+	lTarget, lTargetOk := mapConcept[performableAction](d, data, "lTarget")
+	rTarget, rTargetOk := mapConcept[*virtualAction](d, data, "rTarget")
+	if !tOk || !lTargetOk || !rTargetOk {
+		return nil
+	}
+
+	result := l.agent.newVirtualSolutionRelation(t, lTarget, rTarget, args)
+	result.interpret()
+	return result
 }

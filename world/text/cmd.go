@@ -9,6 +9,7 @@ const (
 	CmdTypeCreateDirectory
 	CmdTypeCreateFile
 	CmdTypeAddCharacter
+	CmdTypeMoveActor
 )
 
 func (w *textWorld) Cmd(args ...any) {
@@ -18,6 +19,7 @@ func (w *textWorld) Cmd(args ...any) {
 		CmdTypeCreateDirectory:    w.cmdCreateDirectory,
 		CmdTypeCreateFile:         w.cmdCreateFile,
 		CmdTypeAddCharacter:       w.cmdAddCharacter,
+		CmdTypeMoveActor:          w.moveActor,
 	}
 
 	if option, seen := cmdOptions[cmdType]; seen {
@@ -67,6 +69,12 @@ func (w *textWorld) cmdAddCharacter(args ...any) {
 	currLine := f.lines[lineNum]
 	left, right := currLine.characters[:charNum], currLine.characters[charNum:]
 	currLine.characters = append(append(left, currLine.newCharacter(c)), right...)
+}
+
+func (w *textWorld) moveActor(args ...any) {
+	actorId := world.GetArg[int](0, true, 0, args)
+	itemId := world.GetArg[int](1, true, 0, args)
+	w.actors[actorId].currItemId = itemId
 }
 
 func (w *textWorld) locateDirectory(itemId int) *directory {

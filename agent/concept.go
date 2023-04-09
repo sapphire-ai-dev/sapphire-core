@@ -70,11 +70,11 @@ func (a *Agent) newAbstractConcept(self concept, args map[int]any, out **abstrac
 	a.newConceptImplVersioning(*out)
 	a.newConceptImplGeneralization(*out)
 
-	if ctx, seen := conceptArg[*contextObject](args, conceptArgContext); seen {
+	if ctx, seen := conceptArg[*contextObject](args, partIdConceptContext); seen {
 		(*out).setCtx(ctx)
 	}
 
-	if temporal, seen := conceptArg[temporalObject](args, conceptArgTime); seen {
+	if temporal, seen := conceptArg[temporalObject](args, partIdConceptTime); seen {
 		(*out).setTime(temporal)
 	}
 }

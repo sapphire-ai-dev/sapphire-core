@@ -26,7 +26,10 @@ func TestConceptCpntSyncTypeUpdateSync(t *testing.T) {
 
 	so := agent.newSimpleObject(1, nil)
 	am := amt.instantiate(so, conceptSourceObservation, nil)
-	aa := aat.instantiate(nil)
+	var aa performableAction
+	for _, inst := range aat.instantiate(nil) {
+		aa = inst
+	}
 	aa.setReceiver(so)
 	_, amSync := am.instShareParts()
 	_, aaSync := aa.instShareParts()
@@ -51,7 +54,10 @@ func TestConceptCpntSyncTypeLockSync(t *testing.T) {
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
 	so := agent.newSimpleObject(1, nil)
 	am := amt.instantiate(so, conceptSourceObservation, nil)
-	aa := aat.instantiate(nil)
+	var aa performableAction
+	for _, inst := range aat.instantiate(nil) {
+		aa = inst
+	}
 	aa.setReceiver(so)
 	_, amSync := am.instShareParts()
 	_, aaSync := aa.instShareParts()

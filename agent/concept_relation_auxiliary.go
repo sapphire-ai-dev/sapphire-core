@@ -26,7 +26,7 @@ func (r *auxiliaryRelation) versioningReplicate() concept {
 
 	args := map[int]any{}
 	if r.ctx() != nil {
-		args[conceptArgContext] = r.ctx()
+		args[partIdConceptContext] = r.ctx()
 	}
 
 	r.agent.newAbstractRelation(result, r._type(), r.lTarget(), r.rTarget(), args, &result.abstractRelation)
@@ -90,7 +90,7 @@ func (a *Agent) newAuxiliaryRelation(t *auxiliaryRelationType, lTarget, rTarget 
 
 	result := &auxiliaryRelation{}
 	a.newAbstractRelation(result, t, lTarget, rTarget, args, &result.abstractRelation)
-	if wantChange, seen := conceptArg[*actionStateChange](args, conceptArgRelationAuxiliaryWantChange); seen {
+	if wantChange, seen := conceptArg[*actionStateChange](args, partIdRelationAuxiliaryWantChange); seen {
 		result._wantChange = wantChange.createReference(result, true)
 	}
 

@@ -48,8 +48,8 @@ func (m *abstractModifier) _type() modifierType {
 func (m *abstractModifier) collectVersions() map[int]concept {
 	result := map[int]concept{}
 	for _, c := range m.target().modifiers(map[int]any{
-		conceptArgContext: m.ctx(),
-		conceptArgTime:    m.time(),
+		partIdConceptContext: m.ctx(),
+		partIdConceptTime:    m.time(),
 	}) {
 		if m._self.versionCollides(c) {
 			result[c.id()] = c
