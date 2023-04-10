@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestTrainingSentence(t *testing.T) {
@@ -110,6 +111,7 @@ func TestParseAuxiliary(t *testing.T) {
 	assert.Equal(t, trainData.testActionInterfaces[4].StepCount, 0)
 
 	// advances agent by 1 time step
+	agent.mind.add(trainData.namedConcepts["jump"])
 	agent.cycle()
 	assert.Equal(t, trainData.testActionInterfaces[4].StepCount, 1) // agent performed requested action!
 }
@@ -132,5 +134,6 @@ func TestParseText0(t *testing.T) {
 	}
 
 	agent.mind.add(trainData.namedConcepts["type"])
-	agent.cycle()
+	world.Tick()
+	time.Sleep(time.Hour)
 }

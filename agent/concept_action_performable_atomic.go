@@ -1,6 +1,8 @@
 package agent
 
-import "github.com/sapphire-ai-dev/sapphire-core/world"
+import (
+	"github.com/sapphire-ai-dev/sapphire-core/world"
+)
 
 type atomicAction struct {
 	*abstractPerformableAction
@@ -28,6 +30,7 @@ func (a *atomicAction) start() bool {
 	}
 
 	a._state = actionStateActive
+	a.snapshot(snapshotTimingPrev, nil)
 	return true
 }
 

@@ -93,5 +93,5 @@ var display *world.DisplayClient
 func Init() {
 	w := newTextWorld()
 	world.SetWorld(w)
-	display = world.NewDisplayClient(w.Name())
+	display = world.NewDisplayClient(w)
 }

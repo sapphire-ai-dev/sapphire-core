@@ -1,6 +1,9 @@
 package agent
 
-import "github.com/sapphire-ai-dev/sapphire-core/world"
+import (
+	"fmt"
+	"github.com/sapphire-ai-dev/sapphire-core/world"
+)
 
 type agentPerception struct {
 	agent          *Agent
@@ -9,6 +12,7 @@ type agentPerception struct {
 
 func (p *agentPerception) cycle() {
 	p.look()
+	p.listen()
 }
 
 func (p *agentPerception) look() {
@@ -60,6 +64,16 @@ func (p *agentPerception) identifyObjectInst(img *world.Image) object {
 
 func (p *agentPerception) identifyObjectType(modifTypes map[int]modifierType) objectType {
 	return p.agent.newSimpleObjectType(conceptSourceObservation, modifTypes, nil)
+}
+
+func (p *agentPerception) listen() {
+	sentences := world.Listen(p.agent.self.worldId)
+	for _, sentence := range sentences {
+		sp := p.agent.language.listen(sentence)
+		if sp != nil {
+			fmt.Println("agent heard", sp.str())
+		}
+	}
 }
 
 func (a *Agent) newAgentPerception() {

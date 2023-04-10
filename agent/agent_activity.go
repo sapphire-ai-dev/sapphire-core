@@ -117,6 +117,7 @@ func (a *agentActivity) startAction() {
 	}
 
 	if bestAction != nil {
+		a.agent.mind.add(bestAction._type())
 		a.activeAction = bestAction
 		//if bestActionType.receiverType() != nil {
 		//	for _, candidateReceiver := range mindConcepts[object](a.agent.mind) {
@@ -132,7 +133,6 @@ func (a *agentActivity) startAction() {
 func (a *agentActivity) propagateAction() {
 	if a.activeAction.state() == actionStateIdle {
 		a.buildSequentialActions()
-		a.activeAction.snapshot(snapshotTimingPrev, nil)
 
 		success := a.activeAction.start()
 		if !success {

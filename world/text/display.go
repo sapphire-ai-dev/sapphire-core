@@ -53,7 +53,7 @@ func (w *textWorld) displaySendDirectory() {
 	data := &directoryDisplayData{Directory: w.directoryText()}
 	bytes, err := json.Marshal(data)
 	if err == nil {
-		display.Send(bytes)
+		display.SendState(bytes)
 	}
 }
 
@@ -65,7 +65,7 @@ func (w *textWorld) displaySendFile(id int) {
 	data := &fileDisplayData{File: w.fileText(id)}
 	bytes, err := json.Marshal(data)
 	if err == nil {
-		display.Send(bytes)
+		display.SendState(bytes)
 	}
 }
 

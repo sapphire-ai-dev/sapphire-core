@@ -58,6 +58,7 @@ func (a *sequentialAction) start() bool {
 	}
 
 	a._state = actionStateActive
+	a.snapshot(snapshotTimingPrev, nil)
 	return true
 }
 

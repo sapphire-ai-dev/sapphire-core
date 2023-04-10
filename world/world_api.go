@@ -43,3 +43,19 @@ func Feel(id int) []*Touch {
 func Cmd(args ...any) {
 	currentWorld.Cmd(args...)
 }
+
+func Listen(id int) []*LangMessage {
+	return currentWorld.Listen(id)
+}
+
+func Speak(speakerId, listenerId *int, content string) {
+	currentWorld.Speak(speakerId, listenerId, content)
+}
+
+func SetAgentSingleton(actorId int) {
+	currentWorld.SetAgentSingleton(actorId)
+}
+
+func GetAgentSingleton() int {
+	return currentWorld.GetAgentSingleton()
+}

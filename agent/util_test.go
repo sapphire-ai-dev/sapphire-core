@@ -21,6 +21,8 @@ func newTextWorldAgent() *Agent {
 	text.Init()
 	world.Reset()
 	result := NewAgent()
+	world.Register(result.self.worldId, result.cycle)
+	world.SetAgentSingleton(result.self.worldId)
 	return result
 }
 

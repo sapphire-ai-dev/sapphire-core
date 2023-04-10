@@ -23,7 +23,7 @@ func (b *langReceiveBuffer) addMessage(time int, speakerId, listenerId *int, bod
 }
 
 func (w *AbstractWorld) newLangReceiveBuffer(id *int) {
-	result := &langReceiveBuffer{id: id}
+	result := &langReceiveBuffer{id: id, messages: map[int][]*LangMessage{}}
 	if id == nil {
 		w.langReceiveBuffers[-1] = result
 	} else {

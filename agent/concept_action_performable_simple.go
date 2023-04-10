@@ -50,6 +50,7 @@ func (a *simpleAction) start() bool {
 	}
 
 	a._state = actionStateActive
+	a.snapshot(snapshotTimingPrev, nil)
 	return true
 }
 

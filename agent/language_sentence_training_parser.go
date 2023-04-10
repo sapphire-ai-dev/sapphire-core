@@ -65,7 +65,6 @@ func (l *agentLanguage) parserAtomicActionType(d *trainSntcData, data map[string
 	}
 
 	result := l.agent.newAtomicActionType(actionInterface, args)
-	l.agent.mind.add(result)
 	return result
 }
 

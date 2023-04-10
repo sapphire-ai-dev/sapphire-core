@@ -34,12 +34,18 @@ type World interface {
 	Listen(id int) []*LangMessage
 	Speak(speakerId, listenerId *int, content string)
 	Cmd(args ...any)
+
+	// SetAgentSingleton / GetAgentSingleton: agent singleton for temporary demos, to be removed
+	SetAgentSingleton(actorId int)
+	GetAgentSingleton() int
 }
 
 type AbstractWorld struct {
 	clock              int
 	cycleFuncs         map[int]func()
 	langReceiveBuffers map[int]*langReceiveBuffer
+
+	agentSingletonId int
 }
 
 func (w *AbstractWorld) Tick() {
@@ -58,6 +64,14 @@ func (w *AbstractWorld) Reset() {
 func (w *AbstractWorld) Register(id int, cycle func()) {
 	w.cycleFuncs[id] = cycle
 	w.newLangReceiveBuffer(&id)
+}
+
+func (w *AbstractWorld) SetAgentSingleton(actorId int) {
+	w.agentSingletonId = actorId
+}
+
+func (w *AbstractWorld) GetAgentSingleton() int {
+	return w.agentSingletonId
 }
 
 func NewAbstractWorld() *AbstractWorld {
