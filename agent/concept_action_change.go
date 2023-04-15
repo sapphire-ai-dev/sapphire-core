@@ -41,7 +41,14 @@ func (a *Agent) newAbstractChange(self concept, t actionType, performer object, 
 	*out = &abstractChange{
 		params: map[string]any{},
 	}
-	a.newAbstractAction(self, t, performer, args, &(*out).abstractAction)
+
+	if args == nil {
+		args = map[int]any{}
+	}
+	args[partIdActionT] = t
+	args[partIdActionPerformer] = performer
+
+	a.newAbstractAction(self, args, &(*out).abstractAction)
 }
 
 type abstractChangeType struct {

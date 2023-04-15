@@ -7,15 +7,18 @@ import (
 )
 
 type agentLanguage struct {
-	agent           *Agent
-	langNodes       map[reflect.Type]*langNode
-	condMemory      *langCondMemory
-	condGenerator   *langCondGenerator
-	interpreters    map[reflect.Type]func(concepts map[int]concept, args ...any) concept
-	wordPartDict    map[string]map[langPart]bool
-	wordConceptDict map[string]map[concept]bool
-	trainParser     *trainSntcParser
-	conceptParsers  map[string]func(d *trainSntcData, data map[string]any, args map[int]any) concept
+	agent            *Agent
+	langNodes        map[reflect.Type]*langNode
+	condMemory       *langCondMemory
+	condGenerator    *langCondGenerator
+	interpreters     map[reflect.Type]func(concepts map[int]concept, args ...any) concept
+	wordPartDict     map[string]map[langPart]bool
+	wordConceptDict  map[string]map[concept]bool
+	trainParser      *trainSntcParser
+	conceptParsers   map[string]func(d *trainSntcData, data map[string]any, args map[int]any) concept
+	fieldNamePartIds map[reflect.Type]map[string]int
+	assembleRecord   *assembleConceptRecord
+	backupRecord     *backupConceptRecord
 }
 
 func (l *agentLanguage) findLangNode(class reflect.Type) *langNode {
@@ -63,14 +66,14 @@ func (l *agentLanguage) listen(msg *world.LangMessage) sntcPart {
 		if *msg.Src == l.agent.self.worldId {
 			src = l.agent.self
 		} else {
-			src = l.agent.newSimpleObject(*msg.Src, nil)
+			src = l.agent.newSimpleObject(map[int]any{partIdObjectWorldId: *msg.Src})
 		}
 	}
 	if msg.Dst != nil {
 		if *msg.Dst == l.agent.self.worldId {
 			dst = l.agent.self
 		} else {
-			dst = l.agent.newSimpleObject(*msg.Dst, nil)
+			dst = l.agent.newSimpleObject(map[int]any{partIdObjectWorldId: *msg.Dst})
 		}
 	}
 
@@ -103,7 +106,8 @@ func (l *agentLanguage) fit(sentence []string, ctx *sntcCtx) sntcPart {
 		return nil
 	}
 
-	return l.interpretMatch(bestMatch, ctx, nil)
+	interpretedMatch := l.interpretMatch(bestMatch, ctx, nil)
+	return interpretedMatch
 }
 
 func (l *agentLanguage) interpretMatch(match *sntcFit, ctx *sntcCtx, parent langPart) sntcPart {
@@ -151,12 +155,13 @@ func (l *agentLanguage) interpretMatch(match *sntcFit, ctx *sntcCtx, parent lang
 
 func (a *Agent) newAgentLanguage() {
 	result := &agentLanguage{
-		agent:           a,
-		langNodes:       map[reflect.Type]*langNode{},
-		wordConceptDict: map[string]map[concept]bool{},
-		wordPartDict:    map[string]map[langPart]bool{},
-		interpreters:    map[reflect.Type]func(concepts map[int]concept, args ...any) concept{},
-		conceptParsers:  map[string]func(d *trainSntcData, data map[string]any, args map[int]any) concept{},
+		agent:            a,
+		langNodes:        map[reflect.Type]*langNode{},
+		wordConceptDict:  map[string]map[concept]bool{},
+		wordPartDict:     map[string]map[langPart]bool{},
+		interpreters:     map[reflect.Type]func(concepts map[int]concept, args ...any) concept{},
+		conceptParsers:   map[string]func(d *trainSntcData, data map[string]any, args map[int]any) concept{},
+		fieldNamePartIds: map[reflect.Type]map[string]int{},
 	}
 
 	result.newCondGenerator()
@@ -164,6 +169,9 @@ func (a *Agent) newAgentLanguage() {
 	result.newTrainSntcParser()
 	result.initInterpreters()
 	result.initConceptParsers()
+	result.initFieldPartIds()
+	result.newAssembleConceptRecord()
+	result.newBackupConceptRecord()
 
 	a.language = result
 }

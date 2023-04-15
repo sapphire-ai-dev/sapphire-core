@@ -34,7 +34,7 @@ func TestWordLangPartFit(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	class, word := toReflect[*simpleObject](), "it"
 	soWlp := agent.language.newLangNode(class).newLangForm().newWordLangPart(class, word)
-	soSrc, soDst := agent.newSimpleObject(1, nil), agent.newSimpleObject(2, nil)
+	soSrc, soDst := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 1}), agent.newSimpleObject(map[int]any{partIdObjectWorldId: 2})
 	ctx := agent.language.newSntcCtx(soSrc, soDst)
 	ctx.sentence = strings.Split("it is an apple", " ")
 	assert.Empty(t, soWlp.fit(1, ctx))
@@ -54,7 +54,7 @@ func TestWordLangPartInterpret(t *testing.T) {
 
 	ln.addLog(map[langCond]*bool{
 		agent.language.condGenerator.generatorMentioned(nil, nil): ternary(true),
-	}, lf, 10.0)
+	}, lf, 10.0, map[int]bool{})
 
 	ctx := agent.language.newSntcCtx(nil, nil)
 	ctx.sentence = strings.Split("it is an apple", " ")
@@ -62,7 +62,7 @@ func TestWordLangPartInterpret(t *testing.T) {
 	assert.True(t, fit.c.isImaginary())
 	assert.False(t, soWlp.interpret(fit, ctx))
 
-	soSbj := agent.newSimpleObject(3, nil)
+	soSbj := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 3})
 	ctx.convCtx.mentioned[soSbj.id()] = soSbj
 	assert.True(t, lf.interpret(fit, ctx))
 	assert.Equal(t, soSbj, fit.c)
@@ -88,7 +88,7 @@ func TestConceptLangPartInstantiate(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	class, tenseId := toReflect[*simpleObject](), 123
 	soClp := agent.language.newLangNode(class).newLangForm().newConceptLangPart(class, tenseId)
-	soSbj := agent.newSimpleObject(1, nil)
+	soSbj := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 1})
 	csp := soClp.instantiate(soSbj, nil).(*wordSntcPart)
 	assert.Equal(t, csp.s, "")
 	assert.Equal(t, csp.p, soClp)
@@ -104,7 +104,7 @@ func TestConceptLangPartFit(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	class, tenseId := toReflect[*simpleObject](), 123
 	soClp := agent.language.newLangNode(class).newLangForm().newConceptLangPart(class, tenseId)
-	soSrc, soDst := agent.newSimpleObject(1, nil), agent.newSimpleObject(2, nil)
+	soSrc, soDst := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 1}), agent.newSimpleObject(map[int]any{partIdObjectWorldId: 2})
 	ctx := agent.language.newSntcCtx(soSrc, soDst)
 	ctx.sentence = strings.Split("bob is a person", " ")
 
@@ -118,7 +118,7 @@ func TestConceptLangPartFit(t *testing.T) {
 	ctx = agent.language.newSntcCtx(soSrc, soDst)
 	ctx.sentence = strings.Split("bob is a person", " ")
 	// the word is known, the fit will match it
-	soSbj := agent.newSimpleObject(456, nil)
+	soSbj := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 456})
 	agent.language.registerWordConcept(ctx.sentence[0], soSbj, tenseId)
 	fits = soClp.fit(0, ctx)
 	assert.Len(t, fits, 1)

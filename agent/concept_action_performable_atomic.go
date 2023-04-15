@@ -49,22 +49,9 @@ func (a *atomicAction) step() bool {
 	return true
 }
 
-func (a *Agent) newAtomicAction(t *atomicActionType, performer object, args map[int]any) *atomicAction {
+func (a *Agent) newAtomicAction(args map[int]any) *atomicAction {
 	result := &atomicAction{}
-	a.newAbstractPerformableAction(result, t, performer, args, &result.abstractPerformableAction)
-	return result.memorize().(*atomicAction)
-}
-
-func (a *Agent) interpretAtomicAction(concepts map[int]concept, _ ...any) concept {
-	result := &atomicAction{}
-	t := interpretPart[*atomicActionType](concepts, partIdActionT)
-	performer := interpretPart[object](concepts, partIdActionPerformer)
-	a.newAbstractPerformableAction(result, t, performer, nil, &result.abstractPerformableAction)
-	receiver := interpretPart[object](concepts, partIdActionReceiver)
-	if receiver != nil {
-		result.setReceiver(receiver)
-	}
-	result.unique = true
+	a.newAbstractPerformableAction(result, args, &result.abstractPerformableAction)
 	return result.memorize().(*atomicAction)
 }
 
@@ -80,7 +67,12 @@ func (t *atomicActionType) match(other concept) bool {
 }
 
 func (t *atomicActionType) instantiate(args map[int]any) map[int]performableAction {
-	inst := t.agent.newAtomicAction(t, t.agent.self, args)
+	if args == nil {
+		args = map[int]any{}
+	}
+	args[partIdActionT] = t
+	args[partIdActionPerformer] = t.agent.self
+	inst := t.agent.newAtomicAction(args)
 	return map[int]performableAction{inst.cid: inst}
 }
 

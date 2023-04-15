@@ -24,7 +24,8 @@ func (o *simpleObject) debugArgs() map[string]any {
 	return args
 }
 
-func (a *Agent) newSimpleObject(worldId int, args map[int]any) *simpleObject {
+func (a *Agent) newSimpleObject(args map[int]any) *simpleObject {
+	worldId, _ := conceptArg[int](args, partIdObjectWorldId)
 	result := &simpleObject{worldId: worldId}
 	a.newAbstractObject(result, args, &result.abstractObject)
 	return result.memorize().(*simpleObject)

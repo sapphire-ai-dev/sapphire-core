@@ -55,8 +55,15 @@ func (p *wordLangPart) fit(start int, ctx *sntcCtx) []*sntcFit {
 
 	var result []*sntcFit
 	if ctx.sentence[start] == p.w {
-		imaginaryConcept := p.f.node.agent.record.generateImaginary(p.class, map[int]any{})
-		match := newSntcFit(start, start+1, p.instantiate(nil, nil), imaginaryConcept, p, 0)
+		var interpretedConcept concept
+		for cond, truth := range p.f.assumeCondTruth() { // interpret from language conditions
+			interpretedConcept, _ = cond.interpret(interpretedConcept, nil, truth, ctx)
+		}
+
+		if isNil(interpretedConcept) {
+			interpretedConcept = p.f.node.agent.record.generateImaginary(p.class, map[int]any{})
+		}
+		match := newSntcFit(start, start+1, p.instantiate(nil, nil), interpretedConcept, p, 0)
 		ctx.addMatch(start, p, match)
 		result = append(result, match)
 	}

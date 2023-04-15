@@ -17,12 +17,15 @@ func TestTrainingSentence(t *testing.T) {
 	amt2.addSource(conceptSourceObservation)
 	sot1 := agent.newSimpleObjectType(conceptSourceObservation, map[int]modifierType{amt1.id(): amt1}, nil)
 	sot2 := agent.newSimpleObjectType(conceptSourceObservation, map[int]modifierType{amt2.id(): amt2}, nil)
-	so1 := agent.newSimpleObject(123, nil)
-	so2 := agent.newSimpleObject(234, nil)
+	so1 := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 123})
+	so2 := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 234})
 	so1.addType(sot1)
 	so2.addType(sot2)
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
-	aa := agent.newAtomicAction(aat, so1, nil)
+	aa := agent.newAtomicAction(map[int]any{
+		partIdActionT:         aat,
+		partIdActionPerformer: so1,
+	})
 	aa.setReceiver(so2)
 	one := agent.symbolic.numerics.number1
 

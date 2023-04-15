@@ -24,7 +24,7 @@ func TestConceptCpntSyncTypeUpdateSync(t *testing.T) {
 	assert.Empty(t, amt.syncMap)
 	assert.Empty(t, aat.syncMap)
 
-	so := agent.newSimpleObject(1, nil)
+	so := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 1})
 	am := amt.instantiate(so, conceptSourceObservation, nil)
 	var aa performableAction
 	for _, inst := range aat.instantiate(nil) {
@@ -52,7 +52,7 @@ func TestConceptCpntSyncTypeLockSync(t *testing.T) {
 	agent := newEmptyWorldAgent()
 	amt := agent.newAspectModifierType(agent.aspect.find([]string{"info1", "info2"}...), nil)
 	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
-	so := agent.newSimpleObject(1, nil)
+	so := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 1})
 	am := amt.instantiate(so, conceptSourceObservation, nil)
 	var aa performableAction
 	for _, inst := range aat.instantiate(nil) {

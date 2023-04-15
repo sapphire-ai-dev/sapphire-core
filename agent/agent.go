@@ -20,10 +20,10 @@ type Agent struct {
 }
 
 func (a *Agent) cycle() {
-	a.time.cycle()
 	a.perception.cycle()
 	a.mind.cycle()
 	a.activity.cycle()
+	a.time.cycle()
 }
 
 func NewAgent() *Agent {

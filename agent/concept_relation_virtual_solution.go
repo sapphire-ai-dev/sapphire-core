@@ -15,9 +15,14 @@ func (r *virtualSolutionRelation) interpret() {
 	rType.addSolution(lType)
 }
 
-func (a *Agent) newVirtualSolutionRelation(t *virtualSolutionRelationType, lTarget performableAction,
-	rTarget *virtualAction, args map[int]any) *virtualSolutionRelation {
+func (a *Agent) newVirtualSolutionRelation(args map[int]any) *virtualSolutionRelation {
 	result := &virtualSolutionRelation{}
+	t, tOk := conceptArg[*virtualSolutionRelationType](args, partIdRelationT)
+	lTarget, lOk := conceptArg[performableAction](args, partIdRelationLTarget)
+	rTarget, rOk := conceptArg[*virtualAction](args, partIdRelationRTarget)
+	if !tOk || !lOk || !rOk {
+		panic("missing args")
+	}
 	a.newAbstractRelation(result, t, lTarget, rTarget, args, &result.abstractRelation)
 	return result.memorize().(*virtualSolutionRelation)
 }

@@ -22,7 +22,7 @@ func TestConceptCtxMatch(t *testing.T) {
 
 func TestDecoratorGetRelations(t *testing.T) {
 	agent := newEmptyWorldAgent()
-	so := agent.newSimpleObject(123, nil)
+	so := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 123})
 	amt1 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "red"), nil)
 	amt2 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "blue"), nil)
 	t0, t1, t2, t3, t4 := 0, 1, 2, 3, 4

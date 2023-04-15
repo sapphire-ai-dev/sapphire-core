@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/gorilla/websocket v1.5.0
-	github.com/sapphire-ai-dev/sapphire_display v0.0.0-20230410195447-84b05db06fa7
+	github.com/sapphire-ai-dev/sapphire_display v0.0.0-20230414233043-31a7b1a966b5
 	github.com/stretchr/testify v1.7.1
 )
 

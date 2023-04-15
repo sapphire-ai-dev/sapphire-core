@@ -12,6 +12,14 @@ func (r *auxiliaryRelation) match(other concept) bool {
 	return ok && r.abstractRelation.match(o.abstractRelation)
 }
 
+func (r *auxiliaryRelation) part(partId int) concept {
+	if partId == partIdRelationAuxiliaryWantChange {
+		return parseRef[change](r.agent, r._wantChange)
+	}
+
+	return r.abstractRelation.part(partId)
+}
+
 func (r *auxiliaryRelation) versionCollides(other concept) bool {
 	o, ok := other.(*auxiliaryRelation)
 	return ok && r.lTarget() == o.lTarget() && r.rTarget() == o.rTarget() &&
@@ -80,11 +88,11 @@ func (r *auxiliaryRelation) instShareParts() (map[int]concept, map[int]int) {
 	return parts, sync
 }
 
-func (a *Agent) newAuxiliaryRelation(t *auxiliaryRelationType, lTarget, rTarget concept,
-	args map[int]any) *auxiliaryRelation {
-	_, lTargetIsObject := lTarget.(object)
-	_, rTargetIsAction := rTarget.(performableAction)
-	if !lTargetIsObject || !rTargetIsAction {
+func (a *Agent) newAuxiliaryRelation(args map[int]any) *auxiliaryRelation {
+	t, tOk := conceptArg[*auxiliaryRelationType](args, partIdRelationT)
+	lTarget, lOk := conceptArg[object](args, partIdRelationLTarget)
+	rTarget, rOk := conceptArg[performableAction](args, partIdRelationRTarget)
+	if !tOk || !lOk || !rOk {
 		return nil
 	}
 
@@ -105,7 +113,8 @@ func (a *Agent) newAuxiliaryRelation(t *auxiliaryRelationType, lTarget, rTarget 
 		result._actionReceiver = rTarget.(performableAction).receiver().createReference(result, true)
 		rTarget.(performableAction).receiver().addAuxiliary(result)
 	}
-	return result
+
+	return result.memorize().(*auxiliaryRelation)
 }
 
 const (

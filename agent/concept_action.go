@@ -45,12 +45,17 @@ func (a *abstractAction) debugArgs() map[string]any {
 	return args
 }
 
-func (a *Agent) newAbstractAction(self concept,
-	t actionType, performer object, args map[int]any, out **abstractAction) {
+func (a *Agent) newAbstractAction(self concept, args map[int]any, out **abstractAction) {
+	t, tOk := conceptArg[actionType](args, partIdActionT)
+	performer, pOk := conceptArg[object](args, partIdActionPerformer)
+	if !tOk {
+		panic("action type not found")
+	}
+
 	*out = &abstractAction{}
 	a.newAbstractConcept(self, args, &(*out).abstractConcept)
 	(*out).t = t.createReference(self, true)
-	if performer != nil {
+	if pOk {
 		(*out)._performer = performer.createReference(self, true)
 	}
 }

@@ -83,10 +83,9 @@ func (a *abstractPerformableAction) setReceiver(o object) {
 	a._receiver = o.createReference(a._self, false)
 }
 
-func (a *Agent) newAbstractPerformableAction(self concept, t actionType, performer object, args map[int]any,
-	out **abstractPerformableAction) {
+func (a *Agent) newAbstractPerformableAction(self concept, args map[int]any, out **abstractPerformableAction) {
 	*out = &abstractPerformableAction{_state: actionStateIdle, _snapshots: map[int]*snapshot{}}
-	a.newAbstractAction(self, t, performer, args, &(*out).abstractAction)
+	a.newAbstractAction(self, args, &(*out).abstractAction)
 }
 
 type snapshot struct {

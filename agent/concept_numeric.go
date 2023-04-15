@@ -16,5 +16,5 @@ func (a *Agent) newNumber(value int, args map[int]any) *number {
 	}
 
 	a.newAbstractConcept(result, args, &result.abstractConcept)
-	return result
+	return result.memorize().(*number)
 }

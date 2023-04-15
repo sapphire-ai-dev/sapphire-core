@@ -10,6 +10,8 @@ github.com/sapphire-ai-dev/sapphire_display v0.0.0-20230410192212-b4c8429f692f h
 github.com/sapphire-ai-dev/sapphire_display v0.0.0-20230410192212-b4c8429f692f/go.mod h1:/EQ3yf9KWvWnzwG/TXihkbPopHRNcU+i1vAgJQmiX3Y=
 github.com/sapphire-ai-dev/sapphire_display v0.0.0-20230410195447-84b05db06fa7 h1:J/ZZ+NkrFortzLHqA2VM598OflHuZ1sGaNuv/oXdLUI=
 github.com/sapphire-ai-dev/sapphire_display v0.0.0-20230410195447-84b05db06fa7/go.mod h1:/EQ3yf9KWvWnzwG/TXihkbPopHRNcU+i1vAgJQmiX3Y=
+github.com/sapphire-ai-dev/sapphire_display v0.0.0-20230414233043-31a7b1a966b5 h1:9cf0cBLPvtlGDE1oiTSdGnfgOqJkK1MmmLe3Cm+wD/4=
+github.com/sapphire-ai-dev/sapphire_display v0.0.0-20230414233043-31a7b1a966b5/go.mod h1:/EQ3yf9KWvWnzwG/TXihkbPopHRNcU+i1vAgJQmiX3Y=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.1 h1:5TQK59W5E3v0r2duFAb7P95B6hEeOyEnHRa8MjYSMTY=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=

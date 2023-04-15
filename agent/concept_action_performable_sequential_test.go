@@ -36,7 +36,7 @@ func TestSequentialActionTypeInstantiate(t *testing.T) {
 	assert.Equal(t, aat1, aa1._type())
 	assert.Equal(t, aat2, aa2._type())
 
-	so := agent.newSimpleObject(1, nil)
+	so := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 1})
 	sa.setReceiver(so)
 	assert.Equal(t, so, sa.receiver())
 	sa.setReceiver(nil)

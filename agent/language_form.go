@@ -1,5 +1,9 @@
 package agent
 
+import (
+	"reflect"
+)
+
 // the struct to represent a permanent grammatical structure for a specific concept class
 // contains either a single wordLangPart to fit pronouns, a single conceptLangPart to fit named
 // concepts, or an arbitrary number of recursiveLangPart to fit phrases
@@ -139,13 +143,14 @@ func (f *langForm) interpretFormConcept(fit *sntcFit) {
 
 		concepts[rlp.partId] = fit.children[i].c
 	}
+
 	fit.c = f.node.agent.language.interpreters[f.node.class](concepts)
 }
 
 // progress: list of fits currently using, result: out parameter
 func (f *langForm) fitRecursive(sntc []string, start, curr int, ctx *sntcCtx,
 	progress []*sntcFit, c concept, result map[*sntcFit]bool) {
-	//fmt.Println(sntc, f.node.class, "start:", start, "progress:", len(progress), "/", len(f.parts))
+	//fmt.Println(sntc, f.node.class, "start:", start, "curr:", curr, "progress:", len(progress), "/", len(f.parts))
 	if len(progress) == len(f.parts) {
 		f.fitForm(start, curr, progress, c, result)
 		return
@@ -173,12 +178,45 @@ func (f *langForm) fitForm(start, curr int, progress []*sntcFit, c concept, resu
 		matchChildren = append(matchChildren, match)
 	}
 
+	if !isNil(c) && reflect.TypeOf(c) != f.node.class {
+		c = f.assembleFormConcept(progress)
+	}
+
 	newMatch := newSntcFit(start, curr, sp, c, f, mismatchCount)
 	result[newMatch] = true
 	newMatch.children = matchChildren
 	for _, child := range matchChildren {
 		child.parent = newMatch
 	}
+}
+
+func (f *langForm) assembleFormConcept(progress []*sntcFit) concept {
+	args := map[int]any{}
+	for i, part := range f.parts {
+		rlp, ok := part.(*recursiveLangPart)
+		if !ok {
+			//fmt.Println(f.node.class, reflect.TypeOf(part), reflect.TypeOf(progress[i].c), len(f.parts), part.(*wordLangPart).w)
+			panic("part is not recursive")
+		}
+
+		args[rlp.partId] = progress[i].c
+	}
+
+	for partId, partInfo := range f.node.infos {
+		// len == 1 is a workaround, todo replace with some probability threshold constant
+		if _, seen := args[partId]; !seen && len(partInfo.implicitIds) == 1 {
+			implicitId := 0
+			for iid := range partInfo.implicitIds {
+				implicitId = iid
+			}
+			implicitConcept := f.node.agent.language.generateImplicitConcept(implicitId)
+			if !isNil(implicitConcept) {
+				args[partId] = implicitConcept
+			}
+		}
+	}
+
+	return f.node.agent.language.assembleRecord.assemble(f.node.class, args)
 }
 
 func (f *langForm) collectMatchableLangParts(progress []*sntcFit) map[langPart]bool {

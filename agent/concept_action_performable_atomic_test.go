@@ -74,23 +74,3 @@ func TestAtomicActionLifecycle(t *testing.T) {
 	assert.False(t, aa.start())
 	assert.False(t, aa.step())
 }
-
-func TestAtomicActionInterpret(t *testing.T) {
-	agent := newEmptyWorldAgent()
-	aat := agent.newAtomicActionType(newTestActionInterface().instantiate(), nil)
-	so1, so2 := agent.newSimpleObject(1, nil), agent.newSimpleObject(2, nil)
-	concepts := map[int]concept{
-		partIdActionT:         aat,
-		partIdActionPerformer: so1,
-		partIdActionReceiver:  so2,
-	}
-	aa := agent.interpretAtomicAction(concepts).(*atomicAction)
-	for partId, c := range concepts {
-		assert.Equal(t, c, aa.part(partId))
-	}
-
-	aa.setReceiver(nil)
-	assert.Equal(t, so2, aa.receiver())
-
-	assert.NotEqual(t, aa, agent.interpretAtomicAction(concepts))
-}

@@ -40,7 +40,7 @@ func assertAspectModifierSeen(t *testing.T, modifs map[int]modifier, amt *aspect
 
 func TestVersioningOverlapSingleSide(t *testing.T) {
 	agent := newEmptyWorldAgent()
-	so := agent.newSimpleObject(123, nil)
+	so := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 123})
 	amt1 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "red"), nil)
 	amt2 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "blue"), nil)
 	tpos, tsos := generateTime(agent, 0, 6)
@@ -66,7 +66,7 @@ func TestVersioningOverlapSingleSide(t *testing.T) {
 
 func TestVersioningOverlapSingleSideOriginalNils(t *testing.T) {
 	agent := newEmptyWorldAgent()
-	so1 := agent.newSimpleObject(123, nil)
+	so1 := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 123})
 	amt1 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "red"), nil)
 	amt2 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "blue"), nil)
 	tpos, tsos := generateTime(agent, 0, 6)
@@ -82,7 +82,7 @@ func TestVersioningOverlapSingleSideOriginalNils(t *testing.T) {
 	assert.Nil(t, am1.time().start())
 	assert.Equal(t, am1.time().end(), tpos[0])
 
-	so2 := agent.newSimpleObject(234, nil)
+	so2 := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 234})
 	amt3 := agent.newAspectModifierType(agent.aspect.find(world.InfoLabelObservable, "color", "yellow"), nil)
 	amt3.instantiate(so2, conceptSourceObservation, map[int]any{
 		partIdConceptTime: agent.newTimeSegmentObject(tpos[2], nil, nil),

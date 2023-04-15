@@ -34,6 +34,7 @@
       "name": "eat-inst-0",
       "class": "AtomicAction",
       "type": "eat",
+      "performer": "agent-inst-0",
       "receiver": "banana-inst-0"
     }, {
       "name": "one",
@@ -78,7 +79,7 @@
             "children": []
           }, {
             "word": "ate",
-            "concept": "eat-inst-0",
+            "concept": "eat",
             "children": []
           }, {
             "word": "",
@@ -124,7 +125,7 @@
             ]
           }, {
             "word": "ate",
-            "concept": "eat-inst-0",
+            "concept": "eat",
             "children": []
           }, {
             "word": "",
@@ -201,7 +202,7 @@
               },
               {
                 "word": "ate",
-                "concept": "eat-inst-0",
+                "concept": "eat",
                 "children": []
               },
               {

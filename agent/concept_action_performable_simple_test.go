@@ -34,7 +34,7 @@ func TestSimpleActionTypeInstantiate(t *testing.T) {
 	assert.Equal(t, aat, aa._type())
 	assert.Nil(t, aa.part(partIdActionReceiver))
 
-	so := agent.newSimpleObject(1, nil)
+	so := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 1})
 	sa.setReceiver(so)
 	assert.Equal(t, so, sa.part(partIdActionReceiver))
 	assert.Equal(t, so, aa.part(partIdActionReceiver))

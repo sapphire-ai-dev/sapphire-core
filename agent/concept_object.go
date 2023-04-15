@@ -24,7 +24,7 @@ func (o *abstractObject) match(n *abstractObject) bool {
 func (o *abstractObject) part(partId int) concept {
 	if partId == partIdObjectT {
 		for _, t := range o.types() {
-			if _, ok := t.(*simpleObjectType); ok {
+			if _, ok := t.(objectType); ok {
 				return t
 			}
 		}

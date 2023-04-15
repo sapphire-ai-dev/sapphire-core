@@ -12,7 +12,10 @@ func (a *createContextAction) match(other concept) bool {
 
 func (a *Agent) newCreateContextAction(t *createContextActionType, performer object, contextId int) *createContextAction {
 	result := &createContextAction{contextId: contextId}
-	a.newAbstractAction(result, t, performer, nil, &result.abstractAction)
+	args := map[int]any{}
+	args[partIdActionT] = t
+	args[partIdActionPerformer] = performer
+	a.newAbstractAction(result, args, &result.abstractAction)
 	return result.memorize().(*createContextAction)
 }
 

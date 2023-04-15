@@ -106,7 +106,12 @@ func (a *sequentialAction) step() bool {
 func (a *Agent) newSequentialAction(t *sequentialActionType, performer object,
 	firstChild, nextChild performableAction, args map[int]any) *sequentialAction {
 	result := &sequentialAction{}
-	a.newAbstractPerformableAction(result, t, performer, args, &result.abstractPerformableAction)
+	if args == nil {
+		args = map[int]any{}
+	}
+	args[partIdActionT] = t
+	args[partIdActionPerformer] = performer
+	a.newAbstractPerformableAction(result, args, &result.abstractPerformableAction)
 	result._first = firstChild.createReference(result, true)
 	result._next = nextChild.createReference(result, true)
 	return result.memorize().(*sequentialAction)

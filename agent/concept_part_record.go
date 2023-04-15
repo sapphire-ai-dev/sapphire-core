@@ -127,6 +127,7 @@ const (
 	partIdModifierT
 	partIdModifierTarget
 	partIdObjectT
+	partIdObjectWorldId
 	partIdObjectGroupSize
 	partIdRelationT
 	partIdRelationLTarget
@@ -137,7 +138,10 @@ const (
 )
 
 func (r *partRecord) initClasses() {
-	r.initClassesSingle(toReflect[concept](), nil, map[int]reflect.Type{})
+	r.initClassesSingle(toReflect[concept](), nil, map[int]reflect.Type{
+		partIdConceptContext: toReflect[*contextObject](),
+		partIdConceptTime:    toReflect[temporalObject](),
+	})
 
 	r.initClassesSingle(toReflect[actionType](), toReflect[concept](), map[int]reflect.Type{})
 	r.initClassesSingle(toReflect[action](), toReflect[concept](), map[int]reflect.Type{

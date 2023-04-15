@@ -2,6 +2,7 @@ package agent
 
 import (
 	"github.com/sapphire-ai-dev/sapphire-core/world"
+	"reflect"
 )
 
 func (l *agentLanguage) initConceptParsers() {
@@ -136,7 +137,8 @@ func (l *agentLanguage) parserSimpleObject(d *trainSntcData, data map[string]any
 		return nil
 	}
 
-	result := l.agent.newSimpleObject(worldId, args)
+	args[partIdObjectWorldId] = worldId
+	result := l.agent.newSimpleObject(args)
 	for _, t := range objectTypes {
 		result.addType(t)
 	}
@@ -155,7 +157,9 @@ func (l *agentLanguage) parserAtomicAction(d *trainSntcData, data map[string]any
 		performer = l.agent.self
 	}
 
-	result := l.agent.newAtomicAction(aat, performer, args)
+	args[partIdActionT] = aat
+	args[partIdActionPerformer] = performer
+	result := l.agent.newAtomicAction(args)
 	receiver, receiverOk := mapConcept[object](d, data, "receiver")
 	if receiverOk {
 		result.setReceiver(receiver)
@@ -220,12 +224,16 @@ func (l *agentLanguage) parserAuxiliaryRelation(d *trainSntcData, data map[strin
 		return nil
 	}
 
+	args[partIdRelationT] = art
+	args[partIdRelationLTarget] = lTarget
+	args[partIdRelationRTarget] = rTarget
+
 	wantChange, wantChangeOk := mapConcept[*actionStateChange](d, data, "wantChange")
 	if wantChangeOk {
 		args[partIdRelationAuxiliaryWantChange] = wantChange
 	}
 
-	result := l.agent.newAuxiliaryRelation(art, lTarget, rTarget, args)
+	result := l.agent.newAuxiliaryRelation(args)
 	result.interpret()
 	return result
 }
@@ -276,11 +284,20 @@ func (l *agentLanguage) parserVirtualAction(d *trainSntcData, data map[string]an
 	}
 	child, _ := mapConcept[performableAction](d, data, "child")
 	performer, performerOk := mapConcept[object](d, data, "performer")
+	receiver, receiverOk := mapConcept[object](d, data, "receiver")
 	if !performerOk {
 		performer = l.agent.self
 	}
 
-	return l.agent.newVirtualAction(vat, performer, child, args)
+	args[partIdActionT] = vat
+	args[partIdActionPerformer] = performer
+	args[partIdActionVirtualSolution] = child
+	result := l.agent.newVirtualAction(args)
+	if receiverOk {
+		result.setReceiver(receiver)
+	}
+
+	return result
 }
 
 func (l *agentLanguage) parserVirtualSolutionRelationType(_ *trainSntcData, _ map[string]any,
@@ -297,7 +314,45 @@ func (l *agentLanguage) parserVirtualSolutionRelation(d *trainSntcData, data map
 		return nil
 	}
 
-	result := l.agent.newVirtualSolutionRelation(t, lTarget, rTarget, args)
+	args[partIdRelationT] = t
+	args[partIdRelationLTarget] = lTarget
+	args[partIdRelationRTarget] = rTarget
+	result := l.agent.newVirtualSolutionRelation(args)
 	result.interpret()
 	return result
+}
+
+func (l *agentLanguage) fieldPartId(class reflect.Type, fieldName string) (int, bool) {
+	for class != nil {
+		if fields, classSeen := l.fieldNamePartIds[class]; classSeen {
+			if id, fieldSeen := fields[fieldName]; fieldSeen {
+				return id, true
+			}
+		}
+
+		if classRecord, recordSeen := l.agent.record.classes[class]; recordSeen && classRecord.parent != nil {
+			class = classRecord.parent.class
+		} else {
+			class = nil
+		}
+	}
+
+	return 0, false
+}
+
+func (l *agentLanguage) initFieldPartIds() {
+	l.fieldNamePartIds[toReflect[concept]()] = map[string]int{
+		"ctx":  partIdConceptContext,
+		"time": partIdConceptTime,
+	}
+	l.fieldNamePartIds[toReflect[action]()] = map[string]int{
+		"type":      partIdActionT,
+		"performer": partIdActionPerformer,
+	}
+	l.fieldNamePartIds[toReflect[performableAction]()] = map[string]int{
+		"receiver": partIdActionReceiver,
+	}
+	l.fieldNamePartIds[toReflect[*auxiliaryRelation]()] = map[string]int{
+		"wantChange": partIdRelationAuxiliaryWantChange,
+	}
 }

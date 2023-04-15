@@ -59,7 +59,7 @@ func (p *agentPerception) parseImage(img *world.Image) (map[int]modifierType, ma
 }
 
 func (p *agentPerception) identifyObjectInst(img *world.Image) object {
-	return p.agent.newSimpleObject(img.Id, nil)
+	return p.agent.newSimpleObject(map[int]any{partIdObjectWorldId: img.Id})
 }
 
 func (p *agentPerception) identifyObjectType(modifTypes map[int]modifierType) objectType {
@@ -72,6 +72,8 @@ func (p *agentPerception) listen() {
 		sp := p.agent.language.listen(sentence)
 		if sp != nil {
 			fmt.Println("agent heard", sp.str())
+		} else {
+			fmt.Println("agent heard and did not understand:", sentence.Body)
 		}
 	}
 }

@@ -6,6 +6,7 @@ type langNode struct {
 	agent *Agent
 	class reflect.Type
 	forms []*langForm
+	infos map[int]*langInfo // partId -> info
 	log   []*sntcLog
 	conds map[langCond]bool
 }
@@ -96,12 +97,13 @@ const (
 	formValueTrainSntc = 10.0
 )
 
-func (n *langNode) addLog(conds map[langCond]*bool, form *langForm, value float64) {
+func (n *langNode) addLog(conds map[langCond]*bool, form *langForm, value float64, infoExplicit map[int]bool) {
 	f := n.selectForm(form)
 	n.log = append(n.log, &sntcLog{
-		condTruth: conds,
-		form:      f,
-		value:     value,
+		condTruth:    conds,
+		form:         f,
+		value:        value,
+		infoExplicit: infoExplicit,
 	})
 }
 
@@ -112,11 +114,13 @@ func (l *agentLanguage) newLangNode(class reflect.Type) *langNode {
 		forms: []*langForm{},
 		log:   []*sntcLog{},
 		conds: map[langCond]bool{},
+		infos: map[int]*langInfo{},
 	}
 }
 
 type sntcLog struct {
-	condTruth map[langCond]*bool
-	form      *langForm
-	value     float64
+	condTruth    map[langCond]*bool
+	form         *langForm
+	value        float64
+	infoExplicit map[int]bool // part Id -> is explicitly mentioned
 }

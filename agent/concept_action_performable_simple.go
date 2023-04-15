@@ -75,7 +75,12 @@ func (a *simpleAction) step() bool {
 func (a *Agent) newSimpleAction(t *simpleActionType, performer object, child performableAction,
 	args map[int]any) *simpleAction {
 	result := &simpleAction{}
-	a.newAbstractPerformableAction(result, t, performer, args, &result.abstractPerformableAction)
+	if args == nil {
+		args = map[int]any{}
+	}
+	args[partIdActionT] = t
+	args[partIdActionPerformer] = performer
+	a.newAbstractPerformableAction(result, args, &result.abstractPerformableAction)
 	result._child = child.createReference(result, true)
 	return result.memorize().(*simpleAction)
 }

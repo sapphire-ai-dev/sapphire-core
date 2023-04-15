@@ -62,7 +62,7 @@ func (r *abstractRelation) part(partId int) concept {
 		return r.rTarget()
 	}
 
-	return nil
+	return r.abstractConcept.part(partId)
 }
 
 func (r *abstractRelation) collectVersions() map[int]concept {

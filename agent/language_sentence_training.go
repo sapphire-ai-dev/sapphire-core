@@ -39,6 +39,7 @@ type trainSntcNode struct {
 	word      string
 	isPronoun bool
 	children  []*trainSntcNode
+	infos     map[int]*trainSntcNodeInfo // partId -> info
 }
 
 func (l *agentLanguage) collectParts(root concept) (map[int]int, map[int]int) {
@@ -54,6 +55,7 @@ func (l *agentLanguage) collectParts(root concept) (map[int]int, map[int]int) {
 	return forward, backward
 }
 
+// internal as in not a leaf, in the semantic tree
 func (t *trainSntcNode) buildInternalForm(root concept, ln *langNode, ctx *sntcCtx) ([]string, *langForm) {
 	_, backward := t.sentence.language.collectParts(root)
 	var sentence []string
@@ -127,8 +129,25 @@ func (t *trainSntcNode) buildForm(ctx *sntcCtx) ([]string, langPart) {
 	}
 
 	condTruth := ln.conditionTruth(root, parentConcept, ctx, map[langCond]bool{})
-	ln.addLog(condTruth, newForm, formValueTrainSntc)
+	infoExplicit := t.buildInfo(ln, root, ctx)
+	ln.addLog(condTruth, newForm, formValueTrainSntc, infoExplicit)
 	return sentence, newForm
+}
+
+func (t *trainSntcNode) buildInfo(ln *langNode, root concept, ctx *sntcCtx) map[int]bool {
+	infoExplicit := map[int]bool{}
+	for partId, i := range t.infos {
+		li := ln.newLangInfo(partId)
+		infoExplicit[partId] = i.explicit
+		if i.explicit {
+			li.record(implicitExplicit)
+		} else {
+			backupId, _ := ln.agent.language.fieldBackupId(root, i.implicitBackup, ctx)
+			li.record(backupId)
+		}
+	}
+
+	return infoExplicit
 }
 
 func (t *trainSntcNode) build() {
@@ -141,6 +160,7 @@ func (l *agentLanguage) newTrainSntcNode(conceptId int, word string, isPronoun b
 		conceptId: conceptId,
 		word:      word,
 		isPronoun: isPronoun,
+		infos:     map[int]*trainSntcNodeInfo{},
 	}
 }
 
@@ -155,6 +175,20 @@ func (t *trainSntcNode) setChildren(children ...*trainSntcNode) {
 	t.children = children
 	for _, child := range children {
 		child.parent = t
+	}
+}
+
+type trainSntcNodeInfo struct {
+	partId         int
+	explicit       bool
+	implicitBackup concept
+}
+
+func (t *trainSntcNode) newInfo(partId int, explicit bool, implicitBackup concept) {
+	t.infos[partId] = &trainSntcNodeInfo{
+		partId:         partId,
+		explicit:       explicit,
+		implicitBackup: implicitBackup,
 	}
 }
 
@@ -220,6 +254,10 @@ func (d *trainSntcData) parseConceptArgs(data map[string]any) map[int]any {
 	}
 	if temporal, temporalOk := mapConcept[temporalObject](d, data, "time"); temporalOk {
 		result[partIdConceptTime] = temporal
+	} else if temporalStr, temporalStrOk := mapVal[string](data, "time"); temporalStrOk {
+		if temporalStr == "now" {
+			result[partIdConceptTime] = d.l.agent.time.now
+		}
 	}
 
 	return result
@@ -259,10 +297,34 @@ func (d *trainSntcData) parseSingleSntc(concepts map[int]concept, r *TrainSntcRo
 }
 
 func (d *trainSntcData) parseSingleNode(n *TrainSntcNodeData) *trainSntcNode {
-	node := d.l.newTrainSntcNode(d.namedConcepts[n.Concept].id(), n.Word, n.IsPronoun)
+	rootC := d.namedConcepts[n.Concept]
+	node := d.l.newTrainSntcNode(rootC.id(), n.Word, n.IsPronoun)
+	_, backward := d.l.collectParts(rootC)
 	var children []*trainSntcNode
+
 	for _, childData := range n.Children {
-		children = append(children, d.parseSingleNode(childData))
+		childNode := d.parseSingleNode(childData)
+		children = append(children, childNode)
+		childPartId, seen := backward[childNode.conceptId]
+		if !seen {
+			panic("child concept unrecognized by part record")
+		}
+
+		node.newInfo(childPartId, true, nil)
+	}
+
+	for _, implicitFieldName := range n.Implicit {
+		implicitPartId, seen := d.l.fieldPartId(reflect.TypeOf(rootC), implicitFieldName)
+		if !seen {
+			panic("implicit field name unrecognized by parser")
+		}
+
+		implicitPart := rootC.part(implicitPartId)
+		if isNil(implicitPart) {
+			panic("implicit part does not exist in root")
+		}
+
+		node.newInfo(implicitPartId, false, implicitPart)
 	}
 
 	node.setChildren(children...)
@@ -379,4 +441,5 @@ type TrainSntcNodeData struct {
 	Concept   string               `json:"concept"`
 	IsPronoun bool                 `json:"isPronoun"`
 	Children  []*TrainSntcNodeData `json:"children"`
+	Implicit  []string             `json:"implicit"`
 }

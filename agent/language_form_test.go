@@ -71,7 +71,7 @@ func TestLangFormFitConcept(t *testing.T) {
 	soLf.parts = append(soLf.parts, soClp)
 	ctx := agent.language.newSntcCtx(nil, nil)
 	ctx.sentence = strings.Split("bob is a person", " ")
-	soSbj := agent.newSimpleObject(456, nil)
+	soSbj := agent.newSimpleObject(map[int]any{partIdObjectWorldId: 456})
 	agent.language.registerWordConcept(ctx.sentence[0], soSbj, tenseId)
 	fits := soLf.fit(0, ctx)
 	assert.Len(t, fits, 1)

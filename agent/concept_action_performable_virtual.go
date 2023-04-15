@@ -7,7 +7,7 @@ type virtualAction struct {
 
 func (a *virtualAction) match(other concept) bool {
 	o, ok := other.(*virtualAction)
-	return ok && a.abstractPerformableAction.match(o.abstractPerformableAction) && a._solution.c == o._solution.c
+	return ok && a.abstractPerformableAction.match(o.abstractPerformableAction) && matchRefs(a._solution, o._solution)
 }
 
 func (a *virtualAction) part(partId int) concept {
@@ -33,7 +33,9 @@ func (a *virtualAction) setReceiver(o object) {
 		return
 	}
 	a._receiver = o.createReference(a._self, false)
-	a.solution().setReceiver(o)
+	if !isNil(a.solution()) {
+		a.solution().setReceiver(o)
+	}
 }
 
 func (a *virtualAction) start() bool {
@@ -70,12 +72,11 @@ func (a *virtualAction) step() bool {
 	return true
 }
 
-func (a *Agent) newVirtualAction(t *virtualActionType, performer object, child performableAction,
-	args map[int]any) *virtualAction {
+func (a *Agent) newVirtualAction(args map[int]any) *virtualAction {
 	result := &virtualAction{}
-	a.newAbstractPerformableAction(result, t, performer, args, &result.abstractPerformableAction)
-	if !isNil(child) {
-		result._solution = child.createReference(result, true)
+	a.newAbstractPerformableAction(result, args, &result.abstractPerformableAction)
+	if solution, ok := conceptArg[performableAction](args, partIdActionVirtualSolution); ok {
+		result._solution = solution.createReference(result, true)
 	}
 	return result.memorize().(*virtualAction)
 }
@@ -102,7 +103,10 @@ func (t *virtualActionType) instantiate(args map[int]any) map[int]performableAct
 	result := map[int]performableAction{}
 	for _, solution := range t.solutions() {
 		for _, solInst := range solution.instantiate(args) {
-			inst := t.agent.newVirtualAction(t, t.agent.self, solInst, args)
+			args[partIdActionT] = t
+			args[partIdActionPerformer] = t.agent.self
+			args[partIdActionVirtualSolution] = solInst
+			inst := t.agent.newVirtualAction(args)
 			result[inst.id()] = inst
 		}
 	}
