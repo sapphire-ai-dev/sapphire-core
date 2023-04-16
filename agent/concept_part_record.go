@@ -120,10 +120,12 @@ const (
 	partIdActionT
 	partIdActionPerformer
 	partIdActionReceiver
+	partIdActionReceiverCount
 	partIdActionSimpleChild
 	partIdActionSequentialFirst
 	partIdActionSequentialNext
 	partIdActionVirtualSolution
+	partIdActionVirtualTypeCore
 	partIdModifierT
 	partIdModifierTarget
 	partIdObjectT
@@ -143,29 +145,39 @@ func (r *partRecord) initClasses() {
 		partIdConceptTime:    toReflect[temporalObject](),
 	})
 
-	r.initClassesSingle(toReflect[actionType](), toReflect[concept](), map[int]reflect.Type{})
+	r.initClassesSingle(toReflect[actionType](), toReflect[concept](), map[int]reflect.Type{
+		partIdActionPerformer: toReflect[objectType](),
+	})
 	r.initClassesSingle(toReflect[action](), toReflect[concept](), map[int]reflect.Type{
 		partIdActionT:         toReflect[actionType](),
 		partIdActionPerformer: toReflect[object](),
 		partIdActionReceiver:  toReflect[object](),
 	})
-	r.initClassesSingle(toReflect[*atomicActionType](), toReflect[actionType](), map[int]reflect.Type{})
-	r.initClassesSingle(toReflect[*atomicAction](), toReflect[action](), map[int]reflect.Type{
+
+	r.initClassesSingle(toReflect[performableActionType](), toReflect[actionType](), map[int]reflect.Type{
+		partIdActionReceiver:      toReflect[objectType](),
+		partIdActionReceiverCount: toReflect[*number](),
+	})
+	r.initClassesSingle(toReflect[performableAction](), toReflect[action](), map[int]reflect.Type{})
+
+	r.initClassesSingle(toReflect[*atomicActionType](), toReflect[performableActionType](), map[int]reflect.Type{})
+	r.initClassesSingle(toReflect[*atomicAction](), toReflect[performableAction](), map[int]reflect.Type{
 		partIdActionT: toReflect[*atomicActionType](),
 	})
-	r.initClassesSingle(toReflect[*simpleActionType](), toReflect[actionType](), map[int]reflect.Type{})
-	r.initClassesSingle(toReflect[*simpleAction](), toReflect[action](), map[int]reflect.Type{
+	r.initClassesSingle(toReflect[*simpleActionType](), toReflect[performableActionType](), map[int]reflect.Type{})
+	r.initClassesSingle(toReflect[*simpleAction](), toReflect[performableAction](), map[int]reflect.Type{
 		partIdActionT:           toReflect[*simpleActionType](),
-		partIdActionSimpleChild: toReflect[action](),
+		partIdActionSimpleChild: toReflect[performableAction](),
 	})
-	r.initClassesSingle(toReflect[*sequentialActionType](), toReflect[actionType](), map[int]reflect.Type{})
-	r.initClassesSingle(toReflect[*sequentialAction](), toReflect[action](), map[int]reflect.Type{
+	r.initClassesSingle(toReflect[*sequentialActionType](), toReflect[performableActionType](), map[int]reflect.Type{})
+	r.initClassesSingle(toReflect[*sequentialAction](), toReflect[performableAction](), map[int]reflect.Type{
 		partIdActionT:               toReflect[*sequentialActionType](),
-		partIdActionSequentialFirst: toReflect[action](),
-		partIdActionSequentialNext:  toReflect[action](),
+		partIdActionSequentialFirst: toReflect[performableAction](),
+		partIdActionSequentialNext:  toReflect[performableAction](),
 	})
-	r.initClassesSingle(toReflect[*virtualActionType](), toReflect[actionType](), map[int]reflect.Type{})
-	r.initClassesSingle(toReflect[*virtualAction](), toReflect[action](), map[int]reflect.Type{
+	r.initClassesSingle(toReflect[*virtualActionType](), toReflect[performableActionType](), map[int]reflect.Type{})
+	r.classes[toReflect[*virtualActionType]()].parts[partIdActionVirtualTypeCore] = r.classes[toReflect[*virtualActionType]()]
+	r.initClassesSingle(toReflect[*virtualAction](), toReflect[performableAction](), map[int]reflect.Type{
 		partIdActionT:               toReflect[*virtualActionType](),
 		partIdActionVirtualSolution: toReflect[performableAction](),
 	})

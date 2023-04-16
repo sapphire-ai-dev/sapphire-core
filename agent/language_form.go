@@ -178,7 +178,7 @@ func (f *langForm) fitForm(start, curr int, progress []*sntcFit, c concept, resu
 		matchChildren = append(matchChildren, match)
 	}
 
-	if !isNil(c) && reflect.TypeOf(c) != f.node.class {
+	if !isNil(c) && (reflect.TypeOf(c) != f.node.class || len(f.parts) != 1) {
 		c = f.assembleFormConcept(progress)
 	}
 
@@ -195,7 +195,6 @@ func (f *langForm) assembleFormConcept(progress []*sntcFit) concept {
 	for i, part := range f.parts {
 		rlp, ok := part.(*recursiveLangPart)
 		if !ok {
-			//fmt.Println(f.node.class, reflect.TypeOf(part), reflect.TypeOf(progress[i].c), len(f.parts), part.(*wordLangPart).w)
 			panic("part is not recursive")
 		}
 

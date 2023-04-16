@@ -16,6 +16,7 @@ func (r *assembleConceptRecord) assemble(class reflect.Type, args map[int]any) c
 func (r *assembleConceptRecord) initAssemblers() {
 	addAssembler[*atomicAction](r, r.l.agent.newAtomicAction)
 	addAssembler[*virtualAction](r, r.l.agent.newVirtualAction)
+	addAssembler[*virtualActionType](r, r.l.agent.newVirtualActionType)
 
 	addAssembler[*simpleObject](r, r.l.agent.newSimpleObject)
 

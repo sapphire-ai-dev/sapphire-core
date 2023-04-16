@@ -47,12 +47,17 @@ func (a *Agent) newAbstractSymbolicObjectType(self concept, source int, str stri
 
 type symbolObjectType struct {
 	*abstractSymbolicObjectType
-	symbol string
 }
 
 func (o *symbolObjectType) match(other concept) bool {
 	n, ok := other.(*symbolObjectType)
-	return ok && o.symbol == n.symbol && o.abstractObjectType._match(n.abstractObjectType)
+	return ok && o._str == n._str && o.abstractObjectType._match(n.abstractObjectType)
+}
+
+func (o *symbolObjectType) debugArgs() map[string]any {
+	args := o.abstractSymbolicObjectType.debugArgs()
+	args["symbol"] = o._str
+	return args
 }
 
 func (a *Agent) newSymbolObjectType(source int, symbol string, args map[int]any) *symbolObjectType {

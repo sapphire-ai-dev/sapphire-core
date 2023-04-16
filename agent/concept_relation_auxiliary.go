@@ -160,22 +160,36 @@ func (t *auxiliaryRelationType) instMatch(r *auxiliaryRelation) bool {
 	}
 
 	selfLTarget, lOk := t.lockMap[partIdRelationLTarget]
-	selfRPerformer, rpOk := t.lockMap[partIdRelationAuxiliaryPerformer]
-	selfRReceiver, rrOk := t.lockMap[partIdRelationAuxiliaryReceiver]
-	if (lOk && r.lTarget() != selfLTarget) ||
-		(rpOk && r.rTarget().(performableAction).performer() != selfRPerformer) ||
-		(rrOk && r.rTarget().(performableAction).receiver() != selfRReceiver) {
+	if lOk && r.lTarget() != selfLTarget {
 		return false
-	}
-
-	if !lOk { // if self did not lock onto a left target, the instance must have the same type
-		if _, seen := r.lTarget().(object).types()[t.lType.c.id()]; !seen {
-			return false
-		}
+	} else if _, seen := r.lTarget().(object).types()[t.lType.c.id()]; !lOk && !seen {
+		// if self did not lock onto a left target, the instance must have the same type
+		return false
 	}
 
 	rTargetPA, rTargetIsPA := r.rTarget().(performableAction)
 	if !rTargetIsPA || rTargetPA._type() != t.rType.c {
+		return false
+	}
+
+	selfRPerformer, rpOk := t.lockMap[partIdRelationAuxiliaryPerformer]
+	if rpOk && rTargetPA.performer() != selfRPerformer {
+		return false
+	}
+
+	selfRReceiver, rrOk := t.lockMap[partIdRelationAuxiliaryReceiver]
+	if rrOk && rTargetPA.receiver() != selfRReceiver {
+		return false
+	} else if !rrOk {
+		trReceiverType := t.rType.c.(performableActionType).receiverType()
+		if trReceiverType != nil && rTargetPA._type().(performableActionType).receiverType() != trReceiverType {
+			return false
+		}
+	}
+
+	if (lOk && r.lTarget() != selfLTarget) ||
+		(rpOk && r.rTarget().(performableAction).performer() != selfRPerformer) ||
+		(rrOk && r.rTarget().(performableAction).receiver() != selfRReceiver) {
 		return false
 	}
 

@@ -6,7 +6,10 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sapphire-ai-dev/sapphire_display/server"
 	"net/url"
+	"sync"
 )
+
+var mu = new(sync.Mutex)
 
 type DisplayClient struct {
 	conn                 *websocket.Conn
@@ -14,6 +17,8 @@ type DisplayClient struct {
 }
 
 func (c *DisplayClient) Send(data []byte) {
+	mu.Lock()
+	defer mu.Unlock()
 	PrintErr(c.conn.WriteMessage(websocket.TextMessage, data))
 }
 

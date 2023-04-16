@@ -36,7 +36,9 @@ func (c *abstractConcept) debug(indent string, depth int) string {
 
 // to be implemented per class
 func (c *abstractConcept) debugArgs() map[string]any {
-	return map[string]any{}
+	return map[string]any{
+		"tenses": c.conceptImplLang.tenses,
+	}
 }
 
 var tab = "  "

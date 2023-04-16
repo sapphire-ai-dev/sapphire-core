@@ -99,6 +99,14 @@ func (t *virtualActionType) match(other concept) bool {
 	return ok && t.abstractPerformableActionType.match(o.abstractPerformableActionType) && matchRefs(t._core, o._core)
 }
 
+func (t *virtualActionType) part(partId int) concept {
+	if partId == partIdActionVirtualTypeCore {
+		return t.core()
+	}
+
+	return t.abstractPerformableActionType.part(partId)
+}
+
 func (t *virtualActionType) instantiate(args map[int]any) map[int]performableAction {
 	result := map[int]performableAction{}
 	for _, solution := range t.solutions() {
@@ -130,11 +138,13 @@ func (t *virtualActionType) solutions() map[int]performableActionType {
 	return parseRefs[performableActionType](t.agent, t._solutions)
 }
 
-func (a *Agent) newVirtualActionType(core *virtualActionType, receiver objectType,
-	args map[int]any) *virtualActionType {
+func (a *Agent) newVirtualActionType(args map[int]any) *virtualActionType {
 	result := &virtualActionType{
 		_solutions: map[int]*memReference{},
 	}
+	core, _ := conceptArg[*virtualActionType](args, partIdActionVirtualTypeCore)
+	receiver, _ := conceptArg[objectType](args, partIdActionReceiver)
+
 	a.newAbstractPerformableActionType(result, receiver, args, &result.abstractPerformableActionType)
 	if core != nil {
 		result._core = core.createReference(result, true)

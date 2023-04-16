@@ -274,7 +274,10 @@ func (l *agentLanguage) parserSymbolObjectType(_ *trainSntcData, data map[string
 func (l *agentLanguage) parserVirtualActionType(d *trainSntcData, data map[string]any, args map[int]any) concept {
 	core, _ := mapConcept[*virtualActionType](d, data, "core")
 	receiver, _ := mapConcept[objectType](d, data, "receiver")
-	return l.agent.newVirtualActionType(core, receiver, args)
+	args[partIdActionVirtualTypeCore] = core
+	args[partIdActionReceiver] = receiver
+	result := l.agent.newVirtualActionType(args)
+	return result
 }
 
 func (l *agentLanguage) parserVirtualAction(d *trainSntcData, data map[string]any, args map[int]any) concept {

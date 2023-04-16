@@ -34,7 +34,7 @@ type abstractPerformableAction struct {
 }
 
 func (a *abstractPerformableAction) match(o *abstractPerformableAction) bool {
-	return a.abstractAction.match(o.abstractAction)
+	return a.abstractAction.match(o.abstractAction) && matchRefs(a._receiver, o._receiver)
 }
 
 func (a *abstractPerformableAction) debugArgs() map[string]any {
@@ -130,6 +130,18 @@ type abstractPerformableActionType struct {
 	_conditions      map[int]*memReference
 	_causations      map[int]*memReference
 	causationRecords map[int]*causationRecord
+}
+
+func (t *abstractPerformableActionType) part(partId int) concept {
+	if partId == partIdActionReceiver {
+		return t.receiverType()
+	}
+
+	if partId == partIdActionReceiverCount {
+		return t.agent.symbolic.numerics.number1
+	}
+
+	return t.abstractActionType.part(partId)
 }
 
 func (t *abstractPerformableActionType) predictValue(args map[int]any) map[int]float64 {

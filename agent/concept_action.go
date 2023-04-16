@@ -17,7 +17,7 @@ type abstractAction struct {
 }
 
 func (a *abstractAction) match(o *abstractAction) bool {
-	return a.abstractConcept.match(o.abstractConcept) && a.t.c == o.t.c && a._performer.c == o._performer.c
+	return a.abstractConcept.match(o.abstractConcept) && matchRefs(a.t, o.t) && matchRefs(a._performer, o._performer)
 }
 
 func (a *abstractAction) part(partId int) concept {

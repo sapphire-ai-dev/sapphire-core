@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"reflect"
 	"sort"
 )
 
@@ -70,7 +71,11 @@ func (m *agentMind) filteredNewThoughts() map[concept]bool {
 	var thoughtList []pair
 	for c, n := range m.newThoughts {
 		if m.agent.memory.find(c) == c {
-			thoughtList = append(thoughtList, pair{c, n})
+			nn := n
+			if reflect.TypeOf(c).Implements(toReflect[performableActionType]()) {
+				nn += 10
+			}
+			thoughtList = append(thoughtList, pair{c, nn})
 		}
 	}
 
@@ -102,7 +107,7 @@ func mindConcepts[T concept](m *agentMind) map[int]T {
 	return result
 }
 
-const defaultMindSize = 10
+const defaultMindSize = 100
 
 func (a *Agent) newAgentMind() {
 	result := &agentMind{
