@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"github.com/sapphire-ai-dev/sapphire-core/world"
 	"reflect"
 )
 
@@ -58,12 +59,15 @@ func (l *agentLanguage) generateImplicitConcept(implicitId int) concept {
 		co.addType(cot)
 		return co
 	}
-	//
-	//if implicitId == implicitActionStateChange { // todo remove workaround
-	//	asct := l.agent.newActionStateChangeType(aat, nil)
-	//	asct.addValue(10.0)
-	//	asc := l.agent.newActionStateChange(asct, aa, nil)
-	//}
+
+	if implicitId == implicitActionStateChange { // todo remove workaround
+		aat := l.agent.newAtomicActionType(&world.ActionInterface{}, nil)
+		aa := l.agent.newAtomicAction(map[int]any{partIdActionT: aat})
+		asct := l.agent.newActionStateChangeType(aat, nil)
+		asct.addValue(10.0)
+		asc := l.agent.newActionStateChange(asct, aa, nil)
+		return asc
+	}
 
 	return nil
 }

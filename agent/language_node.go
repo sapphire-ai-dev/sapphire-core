@@ -1,14 +1,19 @@
 package agent
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type langNode struct {
-	agent *Agent
-	class reflect.Type
-	forms []*langForm
-	infos map[int]*langInfo // partId -> info
-	log   []*sntcLog
-	conds map[langCond]bool
+	agent          *Agent
+	class          reflect.Type
+	wordParts      map[string]*wordLangPart
+	conceptParts   map[int]*conceptLangPart
+	recursiveParts map[int]*recursiveLangPart
+	forms          []*langForm
+	infos          map[int]*langInfo // partId -> info
+	log            []*sntcLog
+	conds          map[langCond]bool
 }
 
 func (n *langNode) selectForm(f *langForm) *langForm {
@@ -109,12 +114,15 @@ func (n *langNode) addLog(conds map[langCond]*bool, form *langForm, value float6
 
 func (l *agentLanguage) newLangNode(class reflect.Type) *langNode {
 	return &langNode{
-		agent: l.agent,
-		class: class,
-		forms: []*langForm{},
-		log:   []*sntcLog{},
-		conds: map[langCond]bool{},
-		infos: map[int]*langInfo{},
+		agent:          l.agent,
+		class:          class,
+		wordParts:      map[string]*wordLangPart{},
+		conceptParts:   map[int]*conceptLangPart{},
+		recursiveParts: map[int]*recursiveLangPart{},
+		forms:          []*langForm{},
+		log:            []*sntcLog{},
+		conds:          map[langCond]bool{},
+		infos:          map[int]*langInfo{},
 	}
 }
 

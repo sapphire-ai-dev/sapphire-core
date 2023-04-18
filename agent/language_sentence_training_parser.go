@@ -202,9 +202,9 @@ func (l *agentLanguage) parserIdentityRelation(d *trainSntcData, data map[string
 func (l *agentLanguage) parserAuxiliaryRelationType(d *trainSntcData, data map[string]any, args map[int]any) concept {
 	auxiliaryTypeName, atNameOk := mapVal[string](data, "type")
 	lType, lTypeOk := mapConcept[objectType](d, data, "lType")
-	rType, rTypeOk := mapConcept[performableActionType](d, data, "rType")
+	rType, _ := mapConcept[performableActionType](d, data, "rType")
 	negative, negativeOk := mapVal[bool](data, "negative")
-	if !atNameOk || !lTypeOk || !rTypeOk || !negativeOk {
+	if !atNameOk || !lTypeOk || !negativeOk {
 		return nil
 	}
 
@@ -268,7 +268,10 @@ func (l *agentLanguage) parserSymbolObjectType(_ *trainSntcData, data map[string
 		return nil
 	}
 
-	return l.agent.newSymbolObjectType(conceptSourceObservation, symbol, args)
+	args[partIdConceptSource] = conceptSourceObservation
+	args[partIdObjectSymbolicTypeStr] = symbol
+
+	return l.agent.newSymbolObjectType(args)
 }
 
 func (l *agentLanguage) parserVirtualActionType(d *trainSntcData, data map[string]any, args map[int]any) concept {

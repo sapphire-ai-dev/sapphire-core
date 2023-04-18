@@ -117,6 +117,7 @@ const (
 	partIdConceptSelf
 	partIdConceptContext
 	partIdConceptTime
+	partIdConceptSource
 	partIdActionT
 	partIdActionPerformer
 	partIdActionReceiver
@@ -131,6 +132,7 @@ const (
 	partIdObjectT
 	partIdObjectWorldId
 	partIdObjectGroupSize
+	partIdObjectSymbolicTypeStr
 	partIdRelationT
 	partIdRelationLTarget
 	partIdRelationRTarget

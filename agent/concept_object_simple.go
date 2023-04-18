@@ -31,15 +31,11 @@ func (a *Agent) newSimpleObject(args map[int]any) *simpleObject {
 	return result.memorize().(*simpleObject)
 }
 
-func (a *Agent) interpretSimpleObject(concepts map[int]concept, _ ...any) concept {
+func (a *Agent) interpretSimpleObject(args map[int]any) concept {
 	result := &simpleObject{worldId: -1}
 	a.newAbstractObject(result, nil, &result.abstractObject)
-	for partId, part := range concepts {
-		if partId == partIdObjectT {
-			if t, ok := part.(objectType); ok {
-				result.addType(t)
-			}
-		}
+	if t, tOk := conceptArg[objectType](args, partIdObjectT); tOk {
+		result.addType(t)
 	}
 	result.unique = true
 	return result.memorize().(*simpleObject)

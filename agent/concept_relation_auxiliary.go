@@ -114,7 +114,7 @@ func (a *Agent) newAuxiliaryRelation(args map[int]any) *auxiliaryRelation {
 		rTarget.(performableAction).receiver().addAuxiliary(result)
 	}
 
-	return result.memorize().(*auxiliaryRelation)
+	return result
 }
 
 const (
@@ -168,7 +168,12 @@ func (t *auxiliaryRelationType) instMatch(r *auxiliaryRelation) bool {
 	}
 
 	rTargetPA, rTargetIsPA := r.rTarget().(performableAction)
-	if !rTargetIsPA || rTargetPA._type() != t.rType.c {
+	selfRTarget, rOk := t.lockMap[partIdRelationRTarget]
+	if rOk && rTargetIsPA && rTargetPA._type() != selfRTarget.(performableAction)._type() {
+		return false
+	}
+
+	if !rTargetIsPA || (t.rType != nil && rTargetPA._type() != t.rType.c) {
 		return false
 	}
 
@@ -180,7 +185,7 @@ func (t *auxiliaryRelationType) instMatch(r *auxiliaryRelation) bool {
 	selfRReceiver, rrOk := t.lockMap[partIdRelationAuxiliaryReceiver]
 	if rrOk && rTargetPA.receiver() != selfRReceiver {
 		return false
-	} else if !rrOk {
+	} else if !rrOk && t.rType != nil {
 		trReceiverType := t.rType.c.(performableActionType).receiverType()
 		if trReceiverType != nil && rTargetPA._type().(performableActionType).receiverType() != trReceiverType {
 			return false
@@ -229,11 +234,12 @@ func (a *Agent) newAuxiliaryRelationType(auxiliaryTypeId int, negative bool,
 		negative:        negative,
 	}
 	a.newAbstractRelationType(result, args, &result.abstractRelationType)
-	if lType != nil {
+	if !isNil(lType) {
 		result.lType = lType.createReference(result, true)
 	}
-	if rType != nil {
+	if !isNil(rType) {
 		result.rType = rType.createReference(result, true)
 	}
-	return result.memorize().(*auxiliaryRelationType)
+	result = result.memorize().(*auxiliaryRelationType)
+	return result
 }

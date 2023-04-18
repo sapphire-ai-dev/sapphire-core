@@ -71,7 +71,7 @@ func (t *trainSntcNode) buildInternalForm(root concept, ln *langNode, ctx *sntcC
 		sentence = append(sentence, phrase...)
 	}
 
-	ln.selectForm(newForm)
+	newForm = ln.selectForm(newForm)
 	t.sentence.language.registerWordPart(sentence[0], newForm)
 	return sentence, newForm
 }
@@ -80,7 +80,7 @@ func (t *trainSntcNode) buildLeafForm(ln *langNode) ([]string, *langForm) {
 	newForm := ln.newLangForm()
 	phrase, childPart := t.buildLeafPart(newForm, ln)
 	newForm.parts = append(newForm.parts, childPart)
-	ln.selectForm(newForm)
+	newForm = ln.selectForm(newForm)
 	t.sentence.language.registerWordPart(phrase[0], newForm)
 	return phrase, newForm
 }

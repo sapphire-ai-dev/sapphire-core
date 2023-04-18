@@ -125,7 +125,7 @@ func TestParseText0(t *testing.T) {
 	world.Cmd(text.CmdTypeGetRootDirectoryId, &rootId)
 	world.Cmd(text.CmdTypeCreateFile, rootId, "tmp.txt", &fileId)
 	world.Cmd(text.CmdTypeMoveActor, agent.self.worldId, fileId)
-	trainData, sentences, _ := agent.language.trainParser.parse("data/scenario/s01_type_char/train_stage_1.sss")
+	trainData, sentences, _ := agent.language.trainParser.parse("data/scenario/s01_type_char/train_stage_2.sss")
 	for _, sentence := range sentences {
 		sentence.rootNode.build()
 	}
@@ -136,9 +136,9 @@ func TestParseText0(t *testing.T) {
 		assert.Equal(t, strings.Join(sn.str(), " "), sentence.body)
 	}
 
-	for i := range "abcdefghijklmnopqrstuvwxyz" {
-		agent.mind.add(trainData.namedConcepts["type-"+"abcdefghijklmnopqrstuvwxyz"[i:i+1]])
-	}
+	//for i := range "abcdefghijklmnopqrstuvwxyz" {
+	//	agent.mind.add(trainData.namedConcepts["type-"+"abcdefghijklmnopqrstuvwxyz"[i:i+1]])
+	//}
 	world.Tick()
 	time.Sleep(time.Hour)
 }

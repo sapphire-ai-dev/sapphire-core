@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"fmt"
 	"github.com/sapphire-ai-dev/sapphire-core/world"
 	"reflect"
 	"strings"
@@ -11,7 +12,7 @@ type agentLanguage struct {
 	langNodes        map[reflect.Type]*langNode
 	condMemory       *langCondMemory
 	condGenerator    *langCondGenerator
-	interpreters     map[reflect.Type]func(concepts map[int]concept, args ...any) concept
+	interpreters     map[reflect.Type]func(args map[int]any) concept
 	wordPartDict     map[string]map[langPart]bool
 	wordConceptDict  map[string]map[concept]bool
 	trainParser      *trainSntcParser
@@ -58,9 +59,14 @@ func (l *agentLanguage) genConds(root concept, ctx *sntcCtx) map[langCond]bool {
 
 func (l *agentLanguage) initInterpreters() {
 	l.interpreters[toReflect[*simpleObject]()] = l.agent.interpretSimpleObject
+	l.interpreters[toReflect[*symbolObjectType]()] = func(args map[int]any) concept {
+		return l.agent.newSymbolObjectType(args)
+	}
 }
 
 func (l *agentLanguage) listen(msg *world.LangMessage) sntcPart {
+	fmt.Println("listen begins", len(l.agent.memory.types[toReflect[*symbolObjectType]()].items),
+		len(l.agent.memory.types[toReflect[*virtualActionType]()].items), len(mindConcepts[*virtualActionType](l.agent.mind)))
 	var src, dst object
 	if msg.Src != nil {
 		if *msg.Src == l.agent.self.worldId {
@@ -78,7 +84,8 @@ func (l *agentLanguage) listen(msg *world.LangMessage) sntcPart {
 	}
 
 	ctx := l.newSntcCtx(src, dst)
-	return l.fit(strings.Split(msg.Body, " "), ctx)
+	result := l.fit(strings.Split(msg.Body, " "), ctx)
+	return result
 }
 
 func (l *agentLanguage) fit(sentence []string, ctx *sntcCtx) sntcPart {
@@ -107,6 +114,7 @@ func (l *agentLanguage) fit(sentence []string, ctx *sntcCtx) sntcPart {
 	}
 
 	interpretedMatch := l.interpretMatch(bestMatch, ctx, nil)
+	fmt.Println(bestMatch.debug())
 	return interpretedMatch
 }
 
@@ -119,7 +127,7 @@ func (l *agentLanguage) interpretMatch(match *sntcFit, ctx *sntcCtx, parent lang
 			return nil
 		}
 
-		newC := l.interpreters[parentForm.node.class](map[int]concept{})
+		newC := l.interpreters[parentForm.node.class](map[int]any{partIdObjectSymbolicTypeStr: word})
 		newC.setExplicitName(currPart.tenseId, word)
 		l.registerWordPart(word, match.lang)
 		match.c = newC
@@ -159,7 +167,7 @@ func (a *Agent) newAgentLanguage() {
 		langNodes:        map[reflect.Type]*langNode{},
 		wordConceptDict:  map[string]map[concept]bool{},
 		wordPartDict:     map[string]map[langPart]bool{},
-		interpreters:     map[reflect.Type]func(concepts map[int]concept, args ...any) concept{},
+		interpreters:     map[reflect.Type]func(args map[int]any) concept{},
 		conceptParsers:   map[string]func(d *trainSntcData, data map[string]any, args map[int]any) concept{},
 		fieldNamePartIds: map[reflect.Type]map[string]int{},
 	}

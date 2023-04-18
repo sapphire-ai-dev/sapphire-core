@@ -60,8 +60,17 @@ func (o *symbolObjectType) debugArgs() map[string]any {
 	return args
 }
 
-func (a *Agent) newSymbolObjectType(source int, symbol string, args map[int]any) *symbolObjectType {
+func (a *Agent) newSymbolObjectType(args map[int]any) *symbolObjectType {
 	result := &symbolObjectType{}
+	source, sourceOk := conceptArg[int](args, partIdConceptSource)
+	symbol, symbolOk := conceptArg[string](args, partIdObjectSymbolicTypeStr)
+	if !sourceOk {
+		source = conceptSourceObservation // todo find better way
+	}
+	if !symbolOk {
+		return nil
+	}
+
 	a.newAbstractSymbolicObjectType(result, source, symbol, args, &result.abstractSymbolicObjectType)
 	return result.memorize().(*symbolObjectType)
 }
